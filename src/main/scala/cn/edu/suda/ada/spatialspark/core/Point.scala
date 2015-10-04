@@ -3,7 +3,7 @@ package cn.edu.suda.ada.spatialspark.core
  * A class that holds coordinates of a point.
  * Created by Graberial on 2015/8/12.
  */
-class Point(var x:Double,var y:Double) {
+class Point(var x:Float,var y:Float) {
   def equals(point:Point):Boolean = x == point.x && y == point.y
 
   override def toString ="(" + x + "," +  y + ")"

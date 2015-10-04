@@ -19,18 +19,18 @@ object HDFSTrajectoryLoader{
     val trajectoryID = fields(1)
     val carID = fields(3)
     var GPSPoints:List[GPSPoint] = Nil
-    val firstGPSPoint = new GPSPoint(fields(22).toDouble,fields(23).toDouble,0,fields(26).toInt,0)
+    val firstGPSPoint = new GPSPoint(fields(22).toFloat,fields(23).toFloat,0,fields(26).toInt,0)
     GPSPoints = firstGPSPoint:: GPSPoints
     val records:Array[String] = fields(28).split("\\|")
     for(record <- records){
       val recordArray = record.split(":")
-      val samplePoint = GPSPoint(recordArray(0).toDouble/100000+firstGPSPoint.latitude,recordArray(1).toDouble/100000+firstGPSPoint.longitude,
+      val samplePoint = GPSPoint(recordArray(0).toFloat/100000+firstGPSPoint.latitude,recordArray(1).toFloat/100000+firstGPSPoint.longitude,
         recordArray(2).toFloat,recordArray(3).toLong+firstGPSPoint.timestamp,recordArray(4).toFloat)
       GPSPoints = samplePoint :: GPSPoints
     }
 
     val trajectory = new Trajectory(trajectoryID,carID, GPSPoints.reverse)
-    trajectory.travelDistance = fields(14).toDouble
+    trajectory.travelDistance = fields(14).toFloat
     trajectory
   }
 }

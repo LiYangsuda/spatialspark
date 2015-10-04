@@ -13,7 +13,7 @@ class Rectangle(var upperLeft:Point,var bottomRight:Point) {
    * @param x2 right boundary
    * @param y2 bottom boundary
    */
-  def this(x1:Double,y1:Double,x2:Double,y2:Double){
+  def this(x1:Float,y1:Float,x2:Float,y2:Float){
     this(new Point(x1,y1),new Point(x2,y2))
   }
 
@@ -30,19 +30,19 @@ class Rectangle(var upperLeft:Point,var bottomRight:Point) {
    * @param y y axis of the given point for testing
    * @return True if the point is covered by the rectangle ,otherwise false
    */
-  def contains(x:Double,y:Double):Boolean = upperLeft.x < x && x < bottomRight.x &&  bottomRight.y < y && y < upperLeft.y
+  def contains(x:Float,y:Float):Boolean = upperLeft.x < x && x < bottomRight.x &&  bottomRight.y < y && y < upperLeft.y
 
   /**
    * Getters and setters
    */
   def getLeft = upperLeft.x
-  def setLeft(left:Double) {upperLeft.x = left}
+  def setLeft(left:Float) {upperLeft.x = left}
   def getRight = bottomRight.x
-  def setRight(right:Double){bottomRight.x = right}
+  def setRight(right:Float){bottomRight.x = right}
   def getTop = upperLeft.y
-  def setTop(top:Double){upperLeft.y = top}
+  def setTop(top:Float){upperLeft.y = top}
   def getBottom = bottomRight.y
-  def setBottom(bottom:Double){bottomRight.y = bottom}
+  def setBottom(bottom:Float){bottomRight.y = bottom}
 
   /*
    * Get the height or width of this rectangle

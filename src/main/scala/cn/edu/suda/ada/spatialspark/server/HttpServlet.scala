@@ -2,7 +2,7 @@ package cn.edu.suda.ada.spatialspark.server
 
 import javax.servlet.http.{HttpServletResponse, HttpServletRequest, HttpServlet}
 
-import cn.edu.suda.ada.spatialspark.core.{Worker, Trajectory}
+import cn.edu.suda.ada.spatialspark.core.Worker
 import org.apache.spark.Logging
 /**
  * Created by liyang on 15-9-21.

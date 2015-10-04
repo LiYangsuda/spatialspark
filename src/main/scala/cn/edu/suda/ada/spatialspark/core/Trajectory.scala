@@ -9,7 +9,7 @@ import scala.math._
  * @author Graberial
  */
 class Trajectory(val trajectoryID:String,val carID:String,var GPSPoints:List[GPSPoint]) {
-  var travelDistance: Double = -1  //Total length of travel distance
+  var travelDistance: Float = -1  //Total length of travel distance
 
   var rectangle: Rectangle = null //The minimum rectangle that merely covers this trajectory
 
@@ -31,7 +31,7 @@ class Trajectory(val trajectoryID:String,val carID:String,var GPSPoints:List[GPS
   /**
    * @return travel distance of a trajectory
    */
-  def getTravelDistance: Double = {
+  def getTravelDistance: Float = {
     if (travelDistance != -1)
       travelDistance
     else {
@@ -39,14 +39,14 @@ class Trajectory(val trajectoryID:String,val carID:String,var GPSPoints:List[GPS
       for(index <- 0 to GPSPoints.length - 2){
         sum += hypot(GPSPoints(index).latitude - GPSPoints(index+1).latitude,GPSPoints(index).longitude - GPSPoints(index+1).longitude)
       }
-      travelDistance = sum
-      sum
+      travelDistance = sum.toFloat
+      travelDistance
     }
   }
 
-  def getAverageSpeed: Double = 1000 * getTravelDistance / (getEndTime - getStarTime)
+  def getAverageSpeed: Float = getTravelDistance / getDuration
 
-  def getAverageSampleInterval: Double = (getEndTime - getStarTime) / GPSPoints.length
+  def getAverageSampleInterval: Float = (getEndTime - getStarTime) / GPSPoints.length
 
   /**
    * Return how many sample points in this trajectory

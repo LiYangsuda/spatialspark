@@ -4,12 +4,12 @@ package cn.edu.suda.ada.spatialspark.server
 import java.io.File
 import java.net.ServerSocket
 import javax.servlet.http.HttpServlet
+
 import org.apache.spark.Logging
 import org.eclipse.jetty.server.nio.SelectChannelConnector
-import org.eclipse.jetty.server.Server
+import org.eclipse.jetty.server.{Connector, Server}
 import org.eclipse.jetty.servlet._
-import org.eclipse.jetty.util.thread.QueuedThreadPool
-import org.eclipse.jetty.server.Connector
+import org.eclipse.jetty.util.thread.{ThreadPool, QueuedThreadPool}
 
 
 /**
@@ -20,7 +20,7 @@ import org.eclipse.jetty.server.Connector
  * A class the wrap around the jetty server and serves as the HTTP server that accept request from the client and extract the parameters from the
  * request and then forward the request to spark cluster. It also responsible for  responding the requests with computed results in json format.
  */
-class JettyEmbedServer(var serverName:String,var port : Int,var baseDir : String) extends Logging{
+class JettyEmbedServer(var serverName:String,var port : Int,val baseDir : String) extends Logging{
 
   private var server : Server = null
   private var servlet: HttpServlet = null
@@ -35,7 +35,7 @@ class JettyEmbedServer(var serverName:String,var port : Int,var baseDir : String
     }
   }
   //If the baseDir is provided, then test whether it is a valid directory.
-  val file = new File((baseDir))
+  val file = new File(System.getProperty("user.dir")+baseDir)
   if(file.exists()){
     if(!file.isDirectory() || !file.canWrite() || !file.canRead){
       logError("provide base directory illegal! system is going to shut down")
@@ -48,14 +48,14 @@ class JettyEmbedServer(var serverName:String,var port : Int,var baseDir : String
   }
   def this(serverName:String,port:Int){
     //If the working directory for the server is not provided, then /tmp/jetty is set to be the default directory.
-    this(serverName,port,"/tmp/jetty")
+    this(serverName,port,"/")
   }
 
   def this(port:Int){
-    this("default server",port,"")
+    this("default server",port)
   }
   def this(){
-    this("default server",8088)
+    this(8088)
   }
   /**
    * Initialize the server
@@ -72,19 +72,20 @@ class JettyEmbedServer(var serverName:String,var port : Int,var baseDir : String
       val connector = new SelectChannelConnector()
       connector.setPort(port)
       connector.setMaxIdleTime(60*1000)
-      server.addConnector(connector)
+      server.setConnectors(Array(connector))
       val threadPool = new QueuedThreadPool(20)
       threadPool.setName("embed-jetty-http")
-      threadPool.setDaemon(true)
+
       connector.setThreadPool(threadPool)
 
-      val context  = new ServletContextHandler(server,baseDir)
+
+      val context  = new ServletContextHandler(server,"/")
 
       /*add the servlet for handling ajax request from the client. Before that, the servlet must be initialized first, or
       an exception will be thrown*/
       if(servlet == null) throw new NullPointerException("servlet is null in JettyEmbedServer")
 
-      context.addServlet(new ServletHolder(servlet.getClass),"/*")  //This servlet is designed to handled all post request
+      context.addServlet(new ServletHolder(servlet.getClass),"/spatialFeature")  //This servlet is designed to handled all post request
     }
   }
 
@@ -111,15 +112,15 @@ class JettyEmbedServer(var serverName:String,var port : Int,var baseDir : String
    * Users can invoke this method to initialize and  start the server
    */
   def doStart(): Unit ={
-    Runtime.getRuntime.addShutdownHook(new Thread(){
-      override def run(): Unit ={
-        try{
-          stopServer()
-        }catch {
-          case ex: Exception => logError(ex.toString)
-        }
-      }
-    })
+//    Runtime.getRuntime.addShutdownHook(new Thread(){
+//      override def run(): Unit ={
+//        try{
+//          stopServer()
+//        }catch {
+//          case ex: Exception => logError(ex.toString)
+//        }
+//      }
+//    })
     try{
       server.start()
       logInfo("jetty started")

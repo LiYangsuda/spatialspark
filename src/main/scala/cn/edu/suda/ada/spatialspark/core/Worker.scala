@@ -39,7 +39,7 @@ object Worker extends Logging {
       originalRDD = lines.map(HDFSTrajectoryLoader.mapLine2Trajectory).persist()
       val trajectoryCount = originalRDD.count()
       logInfo("There are" + trajectoryCount + "trajectories in the sampling data")
-      rdd = originalRDD
+
       originalRDD
     }
   }
@@ -117,20 +117,20 @@ object Worker extends Logging {
   }
 
   /**
-   *
+   *Apply a single filter on trajectory data
    * @param filtersParameters
    */
   def applyFilters(filtersParameters:Map[String,Map[String,String]]) {
     if (originalRDD == null) throw new Exception("Error: trajectory data is null in Worker.applyFilters()")
     if(rdd == null)   rdd = originalRDD
     logInfo("Applying filters on trajectory rdd")
+    var filterArray = new Array[TrajectoryFilter](10)
     for(filter <- filtersParameters){
       if(filter._1 == "OTime"){
         TrajectoryOTimeFilter.setParameters(filter._2("value").toLong,filter._2("relation"))
-        logInfo("Applying OTime filter on rdd")
-        logInfo(rdd.count().toString)
+        logInfo("Applying OTime filter on rdd. OTime.value = "+filter._2("value")+" filter relation: "+filter._2("relation"))
         rdd = rdd.filter(TrajectoryOTimeFilter.doFilter _)
-        logInfo(rdd.count().toString)
+
       }
       if(filter._1 == "DTime"){
         TrajectoryDTimeFilter.setParameters(filter._2("value").toLong,filter._2("relation"))
@@ -178,6 +178,5 @@ object Worker extends Logging {
         rdd = rdd.filter(TrajectoryPassRangeFilter.doFilter _)
       }
     }
-
   }
 }

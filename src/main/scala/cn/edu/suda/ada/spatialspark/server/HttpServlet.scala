@@ -1,5 +1,6 @@
 package cn.edu.suda.ada.spatialspark.server
 
+import java.io.PrintWriter
 import javax.servlet.http.{HttpServletResponse, HttpServletRequest, HttpServlet}
 
 import cn.edu.suda.ada.spatialspark.core.Worker
@@ -7,7 +8,7 @@ import org.apache.spark.Logging
 /**
  * Created by liyang on 15-9-21.
  */
-class JettyHttpServlet extends HttpServlet with Logging{
+class JettyHttpServlet extends HttpServlet{
   private final  val serialVersionUID = 1L
   /**
    * The method doPost do nothing but write hello world to the client
@@ -16,21 +17,22 @@ class JettyHttpServlet extends HttpServlet with Logging{
    */
 
   override def doPost(req:HttpServletRequest,resp:HttpServletResponse){
+
     resp.setContentType("text/html;charset=utf-8")
     resp.setHeader("Cache-Control","no-store")
     resp.setHeader("Pragma","no-cache")
     resp.setHeader("Connection","keep-alive")
-
-
+    resp.setHeader("Access-Control-Allow-Origin","*")
     val filterParameters = getFilterMap(req)
     val featureParameters = getFeatureMap(req)
     // Print out the parameters in the Http request. For testing purpose only
-    if(filterParameters != null){
-      for(param <- filterParameters){
-        logInfo("receive filter parameters from client:\n"+param.toString())
-        Worker.applyFilters(filterParameters)
-      }
-    }
+//    if(filterParameters != null){
+//      for(param <- filterParameters){
+//        System.out.println(param.toString())
+//        Worker.applyFilters(filterParameters)
+//      }
+//    }
+    Worker.applyFilters(filterParameters)
 
     /*features are in the format of Map[featureName:String,featureDistribution: Array[(Int,Int)], where the first parameter represents the feature name while the second
       parameter represents the distribution of the feature. Feature distribution is stored in the data structure of Array[Tuple2(lowBound:Int,numbers:Int)]. Here lowBound represent
@@ -38,14 +40,20 @@ class JettyHttpServlet extends HttpServlet with Logging{
      distribution is (0,1111), that means there are 1111 trajectories that fall into the range [0,2)
     */
     val distributions = Worker.calculateFeatures(featureParameters)
-    logInfo("calculate feature distribution:\n"+Worker.toJson(distributions,featureParameters))
-
-    val out = resp.getWriter
-    out.print(Worker.toJson(distributions,featureParameters))
-    out.flush()
-    out.close()
+    System.out.println(Worker.toJson(distributions,featureParameters))
+    var out: PrintWriter = null
+    try{
+      out = resp.getWriter
+      out.print(Worker.toJson(distributions,featureParameters))
+      out.flush()
+    }catch {
+      case e: Exception => System.out.println(e.printStackTrace())
+    }finally {
+      out.close()
+    }
   }
   override def doGet(req:HttpServletRequest,resp:HttpServletResponse){
+
     doPost(req,resp)
   }
 

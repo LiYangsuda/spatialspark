@@ -116,67 +116,133 @@ object Worker extends Logging {
     "[" + jsonMap.mkString(",") + "]"
   }
 
-  /**
-   *Apply a single filter on trajectory data
-   * @param filtersParameters
-   */
-  def applyFilters(filtersParameters:Map[String,Map[String,String]]) {
-    if (originalRDD == null) throw new Exception("Error: trajectory data is null in Worker.applyFilters()")
-    if(rdd == null)   rdd = originalRDD
-    logInfo("Applying filters on trajectory rdd")
-    var filterArray = new Array[TrajectoryFilter](10)
+//  /**
+//   *Apply a single filter on trajectory data
+//   * @param filtersParameters
+//   */
+//  def applyFilters(filtersParameters:Map[String,Map[String,String]]) {
+//    if (originalRDD == null) throw new Exception("Error: trajectory data is null in Worker.applyFilters()")
+//    if(rdd == null)   rdd = originalRDD
+//    logInfo("Applying filters on trajectory rdd")
+//    var filterArray = new Array[TrajectoryFilter](10)
+//    for(filter <- filtersParameters){
+//      if(filter._1 == "OTime"){
+//        TrajectoryOTimeFilter.setParameters(filter._2("value").toLong,filter._2("relation"))
+//        logInfo("Applying OTime filter on rdd. OTime.value = "+filter._2("value")+" filter relation: "+filter._2("relation"))
+//        rdd = rdd.filter(TrajectoryOTimeFilter.doFilter _)
+//      }
+//      if(filter._1 == "DTime"){
+//        TrajectoryDTimeFilter.setParameters(filter._2("value").toLong,filter._2("relation"))
+//        logInfo("Applying DTime filter on rdd")
+//        rdd = rdd.filter(TrajectoryDTimeFilter.doFilter _)
+//      }
+//      if(filter._1.equalsIgnoreCase("TravelTime")){
+//        TrajectoryTravelTimeFilter.setParameters(filter._2("value").toLong,filter._2("relation"))
+//        logInfo("Applying TravelTime filter on rdd")
+//        rdd = rdd.filter(TrajectoryTravelTimeFilter.doFilter _)
+//      }
+//      if(filter._1.equalsIgnoreCase("TravelDistance")){
+//        TrajectoryTravelDistanceFilter.setParameters(filter._2("value").toLong,filter._2("relation"))
+//        logInfo("Applying TravelDistance filter on rdd")
+//        rdd = rdd.filter(TrajectoryTravelDistanceFilter.doFilter _)
+//      }
+//      if(filter._1.equalsIgnoreCase("AvgSpeed")){
+//        TrajectoryAvgSpeedFilter.setParameters(filter._2("value").toLong,filter._2("relation"))
+//        logInfo("Applying AvgSpeed filter on rdd")
+//        logInfo("before apply filter:AvgSpeed:=="+filter._2("value")+filter._2("relation")+rdd.count().toString)
+//        rdd = rdd.filter(TrajectoryAvgSpeedFilter.doFilter _)
+//        logInfo("After applying filter:AvgSpeed:==================="+rdd.count().toString)
+//      }
+//      if(filter._1.equalsIgnoreCase("AvgSampleTime")){
+//        TrajectoryAvgSampleTimeFilter.setParameters(filter._2("value").toLong,filter._2("relation"))
+//        logInfo("Applying AvgSampleTime filter on rdd")
+//        rdd = rdd.filter(TrajectoryAvgSampleTimeFilter.doFilter _)
+//      }
+//      if(filter._1.equalsIgnoreCase("OPoint")){
+//        val range = new Range(filter._2("minLat").toDouble,filter._2("maxLat").toDouble,filter._2("minLng").toDouble,filter._2("maxLng").toDouble)
+//        logInfo("Applying OPoint filter on rdd")
+//        TrajectoryOPointFilter.setParameters(range)
+//        rdd = rdd.filter(TrajectoryOPointFilter.doFilter _)
+//      }
+//      if(filter._1.equalsIgnoreCase("DPoint")){
+//        val range = new Range(filter._2("minLat").toDouble,filter._2("maxLat").toDouble,filter._2("minLng").toDouble,filter._2("maxLng").toDouble)
+//        logInfo("Applying DPoint filter on rdd")
+//        TrajectoryDPointFilter.setParameters(range)
+//        rdd = rdd.filter(TrajectoryDPointFilter.doFilter _)
+//      }
+//      if(filter._1.equalsIgnoreCase("PassRange")){
+//        val range = new Range(filter._2("minLat").toDouble,filter._2("maxLat").toDouble,filter._2("minLng").toDouble,filter._2("maxLng").toDouble)
+//        logInfo("Applying PassRange filter on rdd")
+//        TrajectoryPassRangeFilter.setParameters(range)
+//        rdd = rdd.filter(TrajectoryPassRangeFilter.doFilter _)
+//      }
+//    }
+//  }
+  private  def constructFilters(filtersParameters: Map[String,Map[String,String]]):List[TrajectoryFilter] = {
+    val filters: List[TrajectoryFilter] = Nil
     for(filter <- filtersParameters){
       if(filter._1 == "OTime"){
         TrajectoryOTimeFilter.setParameters(filter._2("value").toLong,filter._2("relation"))
         logInfo("Applying OTime filter on rdd. OTime.value = "+filter._2("value")+" filter relation: "+filter._2("relation"))
-        rdd = rdd.filter(TrajectoryOTimeFilter.doFilter _)
-
+        TrajectoryOTimeFilter :: filters
       }
       if(filter._1 == "DTime"){
         TrajectoryDTimeFilter.setParameters(filter._2("value").toLong,filter._2("relation"))
         logInfo("Applying DTime filter on rdd")
-        rdd = rdd.filter(TrajectoryDTimeFilter.doFilter _)
+        TrajectoryDTimeFilter :: filters
       }
       if(filter._1.equalsIgnoreCase("TravelTime")){
         TrajectoryTravelTimeFilter.setParameters(filter._2("value").toLong,filter._2("relation"))
         logInfo("Applying TravelTime filter on rdd")
-        rdd = rdd.filter(TrajectoryTravelTimeFilter.doFilter _)
+        TrajectoryTravelTimeFilter :: filters
       }
       if(filter._1.equalsIgnoreCase("TravelDistance")){
         TrajectoryTravelDistanceFilter.setParameters(filter._2("value").toLong,filter._2("relation"))
         logInfo("Applying TravelDistance filter on rdd")
-        rdd = rdd.filter(TrajectoryTravelDistanceFilter.doFilter _)
+        TrajectoryTravelDistanceFilter :: filters
       }
       if(filter._1.equalsIgnoreCase("AvgSpeed")){
         TrajectoryAvgSpeedFilter.setParameters(filter._2("value").toLong,filter._2("relation"))
-        logInfo("Applying AvgSpeed filter on rdd")
-        logInfo("before apply filter:AvgSpeed:=="+filter._2("value")+filter._2("relation")+rdd.count().toString)
-        rdd = rdd.filter(TrajectoryAvgSpeedFilter.doFilter _)
-        logInfo("After applying filter:AvgSpeed:==================="+rdd.count().toString)
+        logInfo("before apply filter:AvgSpeed:=="+filter._2("value")+filter._2("relation"))
+        TrajectoryAvgSpeedFilter :: filters
       }
       if(filter._1.equalsIgnoreCase("AvgSampleTime")){
         TrajectoryAvgSampleTimeFilter.setParameters(filter._2("value").toLong,filter._2("relation"))
         logInfo("Applying AvgSampleTime filter on rdd")
-        rdd = rdd.filter(TrajectoryAvgSampleTimeFilter.doFilter _)
+        TrajectoryAvgSampleTimeFilter :: filters
       }
       if(filter._1.equalsIgnoreCase("OPoint")){
         val range = new Range(filter._2("minLat").toDouble,filter._2("maxLat").toDouble,filter._2("minLng").toDouble,filter._2("maxLng").toDouble)
         logInfo("Applying OPoint filter on rdd")
         TrajectoryOPointFilter.setParameters(range)
-        rdd = rdd.filter(TrajectoryOPointFilter.doFilter _)
+        TrajectoryOPointFilter :: filters
       }
       if(filter._1.equalsIgnoreCase("DPoint")){
         val range = new Range(filter._2("minLat").toDouble,filter._2("maxLat").toDouble,filter._2("minLng").toDouble,filter._2("maxLng").toDouble)
         logInfo("Applying DPoint filter on rdd")
         TrajectoryDPointFilter.setParameters(range)
-        rdd = rdd.filter(TrajectoryDPointFilter.doFilter _)
+        TrajectoryDPointFilter :: filters
       }
       if(filter._1.equalsIgnoreCase("PassRange")){
         val range = new Range(filter._2("minLat").toDouble,filter._2("maxLat").toDouble,filter._2("minLng").toDouble,filter._2("maxLng").toDouble)
         logInfo("Applying PassRange filter on rdd")
         TrajectoryPassRangeFilter.setParameters(range)
-        rdd = rdd.filter(TrajectoryPassRangeFilter.doFilter _)
+        TrajectoryPassRangeFilter :: filters
       }
     }
+    filters
+  }
+
+  def applyFilters():RDD[Trajectory] = {
+    filters: List[TrajectoryFilter]
+    if (originalRDD == null) throw new Exception("Error: trajectory data is null in Worker.applyFilters()")
+    if(rdd == null)   rdd = originalRDD
+    logInfo("Applying filters on trajectory rdd")
+    val filterNums = filters.length
+    rdd.filter(tra => {
+      var flag = true
+      for(filter <- filters if flag) flag = flag && filter.doFilter(tra)
+      flag
+    })
   }
 }

@@ -179,62 +179,64 @@ object Worker extends Logging {
 //    }
 //  }
   private  def constructFilters(filtersParameters: Map[String,Map[String,String]]):List[TrajectoryFilter] = {
-    val filters: List[TrajectoryFilter] = Nil
+    var filters: List[TrajectoryFilter] = Nil
     for(filter <- filtersParameters){
       if(filter._1 == "OTime"){
         TrajectoryOTimeFilter.setParameters(filter._2("value").toLong,filter._2("relation"))
         logInfo("Applying OTime filter on rdd. OTime.value = "+filter._2("value")+" filter relation: "+filter._2("relation"))
-        TrajectoryOTimeFilter :: filters
+       filters =  TrajectoryOTimeFilter :: filters
       }
       if(filter._1 == "DTime"){
         TrajectoryDTimeFilter.setParameters(filter._2("value").toLong,filter._2("relation"))
         logInfo("Applying DTime filter on rdd")
-        TrajectoryDTimeFilter :: filters
+        filters =   TrajectoryDTimeFilter :: filters
       }
       if(filter._1.equalsIgnoreCase("TravelTime")){
         TrajectoryTravelTimeFilter.setParameters(filter._2("value").toLong,filter._2("relation"))
         logInfo("Applying TravelTime filter on rdd")
-        TrajectoryTravelTimeFilter :: filters
+        filters =   TrajectoryTravelTimeFilter :: filters
       }
       if(filter._1.equalsIgnoreCase("TravelDistance")){
         TrajectoryTravelDistanceFilter.setParameters(filter._2("value").toLong,filter._2("relation"))
         logInfo("Applying TravelDistance filter on rdd")
-        TrajectoryTravelDistanceFilter :: filters
+        filters =   TrajectoryTravelDistanceFilter :: filters
       }
       if(filter._1.equalsIgnoreCase("AvgSpeed")){
         TrajectoryAvgSpeedFilter.setParameters(filter._2("value").toLong,filter._2("relation"))
-        logInfo("before apply filter:AvgSpeed:=="+filter._2("value")+filter._2("relation"))
-        TrajectoryAvgSpeedFilter :: filters
+        logInfo("before apply filter:AvgSpeed:= "+filter._2("value")+filter._2("relation"))
+        filters =   TrajectoryAvgSpeedFilter :: filters
       }
       if(filter._1.equalsIgnoreCase("AvgSampleTime")){
         TrajectoryAvgSampleTimeFilter.setParameters(filter._2("value").toLong,filter._2("relation"))
         logInfo("Applying AvgSampleTime filter on rdd")
-        TrajectoryAvgSampleTimeFilter :: filters
+        filters =   TrajectoryAvgSampleTimeFilter :: filters
       }
       if(filter._1.equalsIgnoreCase("OPoint")){
         val range = new Range(filter._2("minLat").toDouble,filter._2("maxLat").toDouble,filter._2("minLng").toDouble,filter._2("maxLng").toDouble)
         logInfo("Applying OPoint filter on rdd")
         TrajectoryOPointFilter.setParameters(range)
-        TrajectoryOPointFilter :: filters
+        filters =   TrajectoryOPointFilter :: filters
       }
       if(filter._1.equalsIgnoreCase("DPoint")){
         val range = new Range(filter._2("minLat").toDouble,filter._2("maxLat").toDouble,filter._2("minLng").toDouble,filter._2("maxLng").toDouble)
         logInfo("Applying DPoint filter on rdd")
         TrajectoryDPointFilter.setParameters(range)
-        TrajectoryDPointFilter :: filters
+        filters =    TrajectoryDPointFilter :: filters
       }
       if(filter._1.equalsIgnoreCase("PassRange")){
         val range = new Range(filter._2("minLat").toDouble,filter._2("maxLat").toDouble,filter._2("minLng").toDouble,filter._2("maxLng").toDouble)
         logInfo("Applying PassRange filter on rdd")
         TrajectoryPassRangeFilter.setParameters(range)
-        TrajectoryPassRangeFilter :: filters
+        filters =    TrajectoryPassRangeFilter :: filters
       }
     }
     filters
   }
 
-  def applyFilters():RDD[Trajectory] = {
-    filters: List[TrajectoryFilter]
+  def applyFilters(filtersParameters: Map[String,Map[String,String]]):RDD[Trajectory] = {
+    val filters: List[TrajectoryFilter] = constructFilters(filtersParameters)
+
+    logInfo(filters(0).toString)
     if (originalRDD == null) throw new Exception("Error: trajectory data is null in Worker.applyFilters()")
     if(rdd == null)   rdd = originalRDD
     logInfo("Applying filters on trajectory rdd")

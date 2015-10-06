@@ -5,7 +5,7 @@ import cn.edu.suda.ada.spatialspark.core.{Trajectory,Range}
 /**
  * Created by liyang on 15-9-4.
  */
-trait TrajectoryFilter {
+trait TrajectoryFilter extends Serializable{
   def doFilter(trajectory:Trajectory):Boolean
 }
 
@@ -144,13 +144,22 @@ object TrajectoryAvgSpeedFilter extends TrajectoryFilter{
   def doFilter(trajectory: Trajectory): Boolean = {
     val rel = "lt"
     val avgSpeed = trajectory.getAverageSpeed
-    var result: Boolean = true
-    if(relation.equals("gt")) {result = if(avgSpeed > averageSpeed) true else false}
-    if("lt".equals("lt")) {if(avgSpeed < averageSpeed) result = true else result = false}
-    if(relation == "equal") {result = if(avgSpeed == averageSpeed) true else false}
-    if(relation == "ngt") {result = if(avgSpeed <= averageSpeed) true else false}
-    if(relation == "nlt") {result = if(avgSpeed >= averageSpeed) true else false}
-     result
+//    var result: Boolean = true
+//    if(relation.equals("gt")) {result = if(avgSpeed > averageSpeed) true else false}
+//    if(relation.equals("lt")) {if(avgSpeed < averageSpeed) result = true else result = false}
+//    if(relation == "equal") {result = if(avgSpeed == averageSpeed) true else false}
+//    if(relation == "ngt") {result = if(avgSpeed <= averageSpeed) true else false}
+//    if(relation == "nlt") {result = if(avgSpeed >= averageSpeed) true else false}
+//     result
+//Use pattern matching to simplify the code above
+    val result: Boolean = relation match {
+      case "gt" => avgSpeed > averageSpeed
+      case "lt" => avgSpeed < averageSpeed
+      case "equal" => avgSpeed == averageSpeed
+      case "ngt" => avgSpeed <= averageSpeed
+      case "nlt" => avgSpeed >= averageSpeed
+    } //If all this relation don't match, an MatcherError will be thrown.
+    result
   }
 }
 /**

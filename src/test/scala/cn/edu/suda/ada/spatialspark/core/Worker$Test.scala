@@ -1,5 +1,6 @@
 package cn.edu.suda.ada.spatialspark.core
 
+import cn.edu.suda.ada.spatialspark.features.{TrajectoryTravelDistanceClassifier, TrajectoryAverageSpeedClassifier}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest.FlatSpec
@@ -19,9 +20,9 @@ class Worker$Test extends FlatSpec {
     val rdd2 = Worker.applyFilters(filterMap)
     println("after:"+rdd2.count())
     val dis = Map("TrajTravelDistance"->1000)
-    val features = Worker.calculateFeatures(dis)
-    features.foreach(f => {
-      f._2.foreach(t => println(t._1 +"->"+t._2))
-    })
+    TrajectoryTravelDistanceClassifier.setLevelStep(100)
+    val feature = Worker.getFeatures(TrajectoryTravelDistanceClassifier.getLevel)
+    feature.foreach(println _)
+
   }
 }

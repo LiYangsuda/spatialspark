@@ -50,7 +50,7 @@ object Worker extends Logging {
 
    * @return  feature distribution
    */
-  private def getFeatures(feature: Trajectory => Int): Array[(Int, Int)] = {
+   def getFeatures(feature: Trajectory => Int): Array[(Int, Int)] = {
 
     val MapRDD = rdd.map(trajectory => (1, feature(trajectory))).map(t => (t._2, t._1)).reduceByKey(_ + _, 1).sortByKey(true).collect()
     MapRDD

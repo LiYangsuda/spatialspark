@@ -15,7 +15,7 @@ class Worker$Test extends FunSuite {
     val inputPath = "hdfs://192.168.131.192:9000/data/xaa"
     val rdd = Worker.loadTrajectoryFromDataSource(inputPath)
     System.out.println(rdd.count())
-    val filterMap:Map[String,Map[String,String]] = Map("AvgSpeed" -> Map("value" ->"20","relation" -> "gt"))
+    val filterMap:Map[String,Map[String,String]] = Map("AvgSpeed" -> Map("value" ->"20","relation" -> "lt"))
     val rdd2 = Worker.applyFilters(filterMap)
     println("after:"+rdd2.count())
   }

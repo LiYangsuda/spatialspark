@@ -6,7 +6,7 @@ package cn.edu.suda.ada.spatialspark.core
 /**
  *A class the represents the a rectangle range
  */
-class Range(val latmin:Double,val latmax:Double,val lngmin:Double,val lngmax:Double){
+class Range(val latmin:Double,val latmax:Double,val lngmin:Double,val lngmax:Double) extends Serializable{
 
   /**
    * Return the latitude distance

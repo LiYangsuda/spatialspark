@@ -112,15 +112,15 @@ class JettyEmbedServer(var serverName:String,var port : Int,val baseDir : String
    * Users can invoke this method to initialize and  start the server
    */
   def doStart(): Unit ={
-//    Runtime.getRuntime.addShutdownHook(new Thread(){
-//      override def run(): Unit ={
-//        try{
-//          stopServer()
-//        }catch {
-//          case ex: Exception => logError(ex.toString)
-//        }
-//      }
-//    })
+    Runtime.getRuntime.addShutdownHook(new Thread(){
+      override def run(): Unit ={
+        try{
+          stopServer()
+        }catch {
+          case ex: Exception => logError(ex.toString)
+        }
+      }
+    })
     try{
       server.start()
       logInfo("jetty started")

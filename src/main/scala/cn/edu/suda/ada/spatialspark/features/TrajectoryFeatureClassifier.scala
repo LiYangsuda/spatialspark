@@ -16,7 +16,8 @@ object TrajectoryAverageSpeedClassifier extends TrajectoryNumericalClassifier{
    * @param trajectory The trajectory for calculating level.
    * @return The level of this trajectory
    */
-  def getLevel(trajectory:Trajectory,levelStep:Int):Int = {
+
+  def getLevel(trajectory:Trajectory):Int = {
     val avgSpeed = trajectory.getAverageSpeed
     val level =  (Math.floor(avgSpeed / levelStep) * levelStep).toInt
     level
@@ -28,7 +29,7 @@ object TrajectoryAverageSpeedClassifier extends TrajectoryNumericalClassifier{
  */
 object TrajectoryTravelDistanceClassifier extends TrajectoryNumericalClassifier{
 
-  def getLevel(trajectory:Trajectory,levelStep:Int):Int = {
+  def getLevel(trajectory:Trajectory):Int = {
     val travelDistance = trajectory.length
     val level =  (Math.floor(travelDistance / levelStep) * levelStep).toInt
     level
@@ -39,7 +40,7 @@ object TrajectoryTravelDistanceClassifier extends TrajectoryNumericalClassifier{
  */
 object TrajectoryTravelTimeClassifier extends TrajectoryNumericalClassifier{
 
-  def getLevel(trajectory:Trajectory,levelStep:Int):Int = {
+  def getLevel(trajectory:Trajectory):Int = {
     val travelTime = trajectory.getEndTime - trajectory.getStarTime
     val level =  (Math.floor(travelTime / levelStep) * levelStep).toInt
     level
@@ -50,7 +51,7 @@ object TrajectoryTravelTimeClassifier extends TrajectoryNumericalClassifier{
  */
 object TrajectoryAvgSimpleTimeClassifier extends TrajectoryNumericalClassifier{
 
-  def getLevel(trajectory:Trajectory,levelStep:Int):Int = {
+  def getLevel(trajectory:Trajectory):Int = {
     val sampleInterval = trajectory.getAverageSampleInterval
     val level =  (Math.floor(sampleInterval / levelStep) * levelStep).toInt
     level
@@ -61,7 +62,7 @@ object TrajectoryAvgSimpleTimeClassifier extends TrajectoryNumericalClassifier{
  */
 object TrajectorySimplePointsCountClassifier extends TrajectoryNumericalClassifier{
 
-  def getLevel(trajectory:Trajectory,levelStep:Int):Int = {
+  def getLevel(trajectory:Trajectory):Int = {
     val samplePoints = trajectory.length
     val level =  (Math.floor(samplePoints / levelStep) * levelStep).toInt
     level

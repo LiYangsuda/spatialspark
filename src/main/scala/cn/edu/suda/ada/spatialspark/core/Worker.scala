@@ -46,14 +46,13 @@ object Worker extends Logging {
 
   /**
    * Get the feature distribution for the given feature
-   * @param trajectoryRDD trajectory data
    * @param feature  a function value that calculate the feature level of the trajectory
-   * @param levelStep level step of the distribution
+
    * @return  feature distribution
    */
-  private def getFeatures(trajectoryRDD: RDD[Trajectory], feature: (Trajectory, Int) => Int, levelStep: Int): Array[(Int, Int)] = {
-    if (trajectoryRDD == null) throw new Exception("trajectory data  passed to Worker is null")
-    val MapRDD = trajectoryRDD.map(trajectory => (1, feature(trajectory, levelStep))).map(t => (t._2, t._1)).reduceByKey(_ + _, 1).sortByKey(true).collect()
+  private def getFeatures(feature: Trajectory => Int): Array[(Int, Int)] = {
+
+    val MapRDD = rdd.map(trajectory => (1, feature(trajectory))).map(t => (t._2, t._1)).reduceByKey(_ + _, 1).sortByKey(true).collect()
     MapRDD
   }
 
@@ -68,16 +67,31 @@ object Worker extends Logging {
     if (rdd == null) rdd = originalRDD
     logInfo("calculating the features")
     var distributions = Map[String, Array[(Int, Int)]]()
-    for (feature <- features) {
+    for ((featureName,levelStep) <- features) {
       val distribution =
-        feature._1 match {
-          case "TrajAvgSpeed" => getFeatures(rdd, TrajectoryAverageSpeedClassifier.getLevel, feature._2)
-          case "TrajTravelDistance" => getFeatures(rdd, TrajectoryTravelDistanceClassifier.getLevel, feature._2)
-          case "TrajTravelTime" => getFeatures(rdd, TrajectoryTravelTimeClassifier.getLevel, feature._2)
-          case "TrajSimplePointsCount" => getFeatures(rdd, TrajectorySimplePointsCountClassifier.getLevel, feature._2)
-          case "TrajAvgSimpleTime" => getFeatures(rdd, TrajectoryAvgSimpleTimeClassifier.getLevel, feature._2)
+        featureName match {
+          case "TrajAvgSpeed" => {
+            TrajectoryAverageSpeedClassifier.setLevelStep(levelStep)
+            getFeatures(TrajectoryAverageSpeedClassifier.getLevel)
+          }
+          case "TrajTravelDistance" => {
+            TrajectoryTravelDistanceClassifier.setLevelStep(levelStep)
+            getFeatures(TrajectoryTravelDistanceClassifier.getLevel)
+          }
+          case "TrajTravelTime" => {
+            TrajectoryTravelDistanceClassifier.setLevelStep(levelStep)
+            getFeatures(TrajectoryTravelTimeClassifier.getLevel)
+          }
+          case "TrajSimplePointsCount" => {
+            TrajectorySimplePointsCountClassifier.setLevelStep(levelStep)
+            getFeatures(TrajectorySimplePointsCountClassifier.getLevel)
+          }
+          case "TrajAvgSimpleTime" => {
+            TrajectoryAvgSimpleTimeClassifier.setLevelStep(levelStep)
+            getFeatures(TrajectoryAvgSimpleTimeClassifier.getLevel)
+          }
         }
-      distributions += (feature._1 -> distribution)
+      distributions += (featureName -> distribution)
     }
     distributions
   }
@@ -103,7 +117,7 @@ object Worker extends Logging {
    * @return   distribution data in the format of json array without the prefix of the  feature's name, like [{"down": 0,"up": 2,"val": 111},{},……]
    */
   private def array2JsonArray(distribution: Array[(Int, Int)], levelStep: Int = 1): String = {
-    var jsonMap = ArrayBuffer[String]()
+    var jsonMap: List[String] = Nil
     /*Transform each feature distribution to json key-value pair. Take trajectory average speed for example,
      if the level step is 2,the distribution data will be transformed into
      [{"down":0,"up":2,"val":1111},{"down":2,"up":4,"val":2222},……]
@@ -111,73 +125,12 @@ object Worker extends Logging {
     for (item <- distribution) {
       //item is a two element tuple,for example,(0,2222)
       val jsonItem = "{\"down\":" + item._1 + ",\"up\":" + (item._1 + levelStep) + ",\"val\":" + item._2 + "}"
-      jsonMap += jsonItem
+      jsonMap =  jsonItem :: jsonMap
     }
-    "[" + jsonMap.mkString(",") + "]"
+    "[" + jsonMap.reverse.mkString(",") + "]"
   }
 
-//  /**
-//   *Apply a single filter on trajectory data
-//   * @param filtersParameters
-//   */
-//  def applyFilters(filtersParameters:Map[String,Map[String,String]]) {
-//    if (originalRDD == null) throw new Exception("Error: trajectory data is null in Worker.applyFilters()")
-//    if(rdd == null)   rdd = originalRDD
-//    logInfo("Applying filters on trajectory rdd")
-//    var filterArray = new Array[TrajectoryFilter](10)
-//    for(filter <- filtersParameters){
-//      if(filter._1 == "OTime"){
-//        TrajectoryOTimeFilter.setParameters(filter._2("value").toLong,filter._2("relation"))
-//        logInfo("Applying OTime filter on rdd. OTime.value = "+filter._2("value")+" filter relation: "+filter._2("relation"))
-//        rdd = rdd.filter(TrajectoryOTimeFilter.doFilter _)
-//      }
-//      if(filter._1 == "DTime"){
-//        TrajectoryDTimeFilter.setParameters(filter._2("value").toLong,filter._2("relation"))
-//        logInfo("Applying DTime filter on rdd")
-//        rdd = rdd.filter(TrajectoryDTimeFilter.doFilter _)
-//      }
-//      if(filter._1.equalsIgnoreCase("TravelTime")){
-//        TrajectoryTravelTimeFilter.setParameters(filter._2("value").toLong,filter._2("relation"))
-//        logInfo("Applying TravelTime filter on rdd")
-//        rdd = rdd.filter(TrajectoryTravelTimeFilter.doFilter _)
-//      }
-//      if(filter._1.equalsIgnoreCase("TravelDistance")){
-//        TrajectoryTravelDistanceFilter.setParameters(filter._2("value").toLong,filter._2("relation"))
-//        logInfo("Applying TravelDistance filter on rdd")
-//        rdd = rdd.filter(TrajectoryTravelDistanceFilter.doFilter _)
-//      }
-//      if(filter._1.equalsIgnoreCase("AvgSpeed")){
-//        TrajectoryAvgSpeedFilter.setParameters(filter._2("value").toLong,filter._2("relation"))
-//        logInfo("Applying AvgSpeed filter on rdd")
-//        logInfo("before apply filter:AvgSpeed:=="+filter._2("value")+filter._2("relation")+rdd.count().toString)
-//        rdd = rdd.filter(TrajectoryAvgSpeedFilter.doFilter _)
-//        logInfo("After applying filter:AvgSpeed:==================="+rdd.count().toString)
-//      }
-//      if(filter._1.equalsIgnoreCase("AvgSampleTime")){
-//        TrajectoryAvgSampleTimeFilter.setParameters(filter._2("value").toLong,filter._2("relation"))
-//        logInfo("Applying AvgSampleTime filter on rdd")
-//        rdd = rdd.filter(TrajectoryAvgSampleTimeFilter.doFilter _)
-//      }
-//      if(filter._1.equalsIgnoreCase("OPoint")){
-//        val range = new Range(filter._2("minLat").toDouble,filter._2("maxLat").toDouble,filter._2("minLng").toDouble,filter._2("maxLng").toDouble)
-//        logInfo("Applying OPoint filter on rdd")
-//        TrajectoryOPointFilter.setParameters(range)
-//        rdd = rdd.filter(TrajectoryOPointFilter.doFilter _)
-//      }
-//      if(filter._1.equalsIgnoreCase("DPoint")){
-//        val range = new Range(filter._2("minLat").toDouble,filter._2("maxLat").toDouble,filter._2("minLng").toDouble,filter._2("maxLng").toDouble)
-//        logInfo("Applying DPoint filter on rdd")
-//        TrajectoryDPointFilter.setParameters(range)
-//        rdd = rdd.filter(TrajectoryDPointFilter.doFilter _)
-//      }
-//      if(filter._1.equalsIgnoreCase("PassRange")){
-//        val range = new Range(filter._2("minLat").toDouble,filter._2("maxLat").toDouble,filter._2("minLng").toDouble,filter._2("maxLng").toDouble)
-//        logInfo("Applying PassRange filter on rdd")
-//        TrajectoryPassRangeFilter.setParameters(range)
-//        rdd = rdd.filter(TrajectoryPassRangeFilter.doFilter _)
-//      }
-//    }
-//  }
+
   private  def constructFilters(filtersParameters: Map[String,Map[String,String]]):List[TrajectoryFilter] = {
     var filters: List[TrajectoryFilter] = Nil
     for(filter <- filtersParameters){
@@ -197,7 +150,7 @@ object Worker extends Logging {
         filters =   TrajectoryTravelTimeFilter :: filters
       }
       if(filter._1.equalsIgnoreCase("TravelDistance")){
-        TrajectoryTravelDistanceFilter.setParameters(filter._2("value").toLong,filter._2("relation"))
+        TrajectoryTravelDistanceFilter.setParameters(filter._2("value").toDouble,filter._2("relation"))
         logInfo("Applying TravelDistance filter on rdd")
         filters =   TrajectoryTravelDistanceFilter :: filters
       }
@@ -236,15 +189,16 @@ object Worker extends Logging {
   def applyFilters(filtersParameters: Map[String,Map[String,String]]):RDD[Trajectory] = {
     val filters: List[TrajectoryFilter] = constructFilters(filtersParameters)
 
-    logInfo(filters(0).toString)
+    logInfo("Filter number: "+filters.length)
     if (originalRDD == null) throw new Exception("Error: trajectory data is null in Worker.applyFilters()")
     if(rdd == null)   rdd = originalRDD
     logInfo("Applying filters on trajectory rdd")
     val filterNums = filters.length
-    rdd.filter(tra => {
+    rdd = rdd.filter(tra => {
       var flag = true
       for(filter <- filters if flag) flag = flag && filter.doFilter(tra)
       flag
     })
+    rdd
   }
 }

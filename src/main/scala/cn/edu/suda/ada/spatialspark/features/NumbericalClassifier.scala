@@ -12,13 +12,16 @@ import cn.edu.suda.ada.spatialspark.core.{GPSPoint, Trajectory}
  */
 
 trait TrajectoryNumericalClassifier{
-
+  var levelStep: Long = 1
+  def setLevelStep(levelStep : Long): Unit ={
+    this.levelStep = levelStep
+  }
   /**
    * For a given trajectory, calculate which feature level it belongs to.
    * @param trajectory The trajectory for calculating level.
    * @return The level of this trajectory
    */
-  def getLevel(trajectory:Trajectory,levelStep:Int):Int
+  def getLevel(trajectory:Trajectory):Int
 }
 
 /**

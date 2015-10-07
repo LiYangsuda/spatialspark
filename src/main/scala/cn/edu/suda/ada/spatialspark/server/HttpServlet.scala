@@ -26,12 +26,11 @@ class JettyHttpServlet extends HttpServlet{
     val filterParameters = getFilterMap(req)
     val featureParameters = getFeatureMap(req)
     // Print out the parameters in the Http request. For testing purpose only
-//    if(filterParameters != null){
-//      for(param <- filterParameters){
-//        System.out.println(param.toString())
-//        Worker.applyFilters(filterParameters)
-//      }
-//    }
+    if(filterParameters != null){
+      for(param <- filterParameters){
+        System.out.println(param.toString())
+      }
+    }
     Worker.applyFilters(filterParameters)
 
     /*features are in the format of Map[featureName:String,featureDistribution: Array[(Int,Int)], where the first parameter represents the feature name while the second

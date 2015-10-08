@@ -6,7 +6,7 @@ package cn.edu.suda.ada.spatialspark.core
 /**
  *A class the represents the a rectangle range
  */
-class Range(val latmin:Double,val latmax:Double,val lngmin:Double,val lngmax:Double) extends Serializable{
+class Range(val lngmin:Double,val latmax:Double,val lngmax:Double,val latmin:Double) extends Serializable{
 
   /**
    * Return the latitude distance
@@ -24,8 +24,10 @@ class Range(val latmin:Double,val latmax:Double,val lngmin:Double,val lngmax:Dou
    * @return  Return true if this range contains the point, false otherwise.
    */
   def contains(point:Point):Boolean = {
-    latmin < point.x && point.x < latmax && lngmin < point.y && point.y < lngmax
+    lngmin < point.x && point.x < lngmax && latmin < point.y && point.y < latmax
   }
+
+ override def toString = "Range:("+lngmin +","+latmax+","+lngmax+","+latmin+")"
 }
 object Range{
   /**
@@ -41,6 +43,7 @@ object Range{
   }
 
   /**
+   * @todo
    * Validate whehter the string is valid to be transformed into a Range object. Note the result is set to be always true for testing
    * @param input The string to generate a Range object
    * @return

@@ -83,11 +83,11 @@ object Worker extends Logging {
             TrajectoryTravelDistanceClassifier.setLevelStep(levelStep)
             getFeatures(TrajectoryTravelTimeClassifier.getLevel)
           }
-          case "TrajSimplePointsCount" => {
+          case "TrajSamplePointsCount" => {
             TrajectorySimplePointsCountClassifier.setLevelStep(levelStep)
             getFeatures(TrajectorySimplePointsCountClassifier.getLevel)
           }
-          case "TrajAvgSimpleTime" => {
+          case "TrajAvgSampleTime" => {
             TrajectoryAvgSimpleTimeClassifier.setLevelStep(levelStep)
             getFeatures(TrajectoryAvgSimpleTimeClassifier.getLevel)
           }
@@ -170,20 +170,22 @@ object Worker extends Logging {
         filters =   TrajectoryAvgSampleTimeFilter :: filters
       }
       if(filter._1.equalsIgnoreCase("OPoint")){
-        val range = new Range(filter._2("minLat").toDouble,filter._2("maxLat").toDouble,filter._2("minLng").toDouble,filter._2("maxLng").toDouble)
+        val range = new Range(filter._2("minLng").toDouble,filter._2("maxLat").toDouble,filter._2("maxLng").toDouble,filter._2("minLat").toDouble)
         logInfo("Applying OPoint filter on rdd")
         TrajectoryOPointFilter.setParameters(range)
         filters =   TrajectoryOPointFilter :: filters
       }
       if(filter._1.equalsIgnoreCase("DPoint")){
-        val range = new Range(filter._2("minLat").toDouble,filter._2("maxLat").toDouble,filter._2("minLng").toDouble,filter._2("maxLng").toDouble)
+        val range = new Range(filter._2("minLng").toDouble,filter._2("maxLat").toDouble,filter._2("maxLng").toDouble,filter._2("minLat").toDouble)
         logInfo("Applying DPoint filter on rdd")
         TrajectoryDPointFilter.setParameters(range)
         filters =    TrajectoryDPointFilter :: filters
       }
       if(filter._1.equalsIgnoreCase("PassRange")){
-        val range = new Range(filter._2("minLat").toDouble,filter._2("maxLat").toDouble,filter._2("minLng").toDouble,filter._2("maxLng").toDouble)
-        logInfo("Applying PassRange filter on rdd")
+        logInfo("minLng:"+filter._2("minLng")+" maxLat:" +filter._2("maxLat")+" maxLng:"+filter._2("maxLng")+" minLat:"+filter._2("minLat"))
+        val range = new Range(filter._2("minLng").toDouble,filter._2("maxLat").toDouble,filter._2("maxLng").toDouble,filter._2("minLat").toDouble)
+
+        logInfo("Applying PassRange filter:"+range.toString)
         TrajectoryPassRangeFilter.setParameters(range)
         filters =    TrajectoryPassRangeFilter :: filters
       }
@@ -200,17 +202,18 @@ object Worker extends Logging {
   def applyFilters(filtersParameters: Map[String,Map[String,String]]):RDD[Trajectory] = {
    // val filtersBroadcast: List[TrajectoryFilter] =constructFilters(filtersParameters)
     //context.broadcast(filtersBroadcast)
-    val filtersbc = context.broadcast(constructFilters(filtersParameters))
-   // logInfo("Filter number: "+filters.length)
+   // val filtersbc = context.broadcast(constructFilters(filtersParameters))
     if (originalRDD == null) throw new Exception("Error: trajectory data is null in Worker.applyFilters()")
      rdd = originalRDD
     logInfo("Applying filters on trajectory rdd")
 
     rdd = rdd.filter(tra => {
       var flag = true
-    //  val filters = filtersbc.value
       val filters = Worker.constructFilters(filtersParameters)
-      for(filter <- filters if flag) flag = flag && filter.doFilter(tra)
+      for(filter <- filters if flag) {
+        logInfo(filter.toString)
+        flag = flag && filter.doFilter(tra)
+      }
       flag
     })
     rdd

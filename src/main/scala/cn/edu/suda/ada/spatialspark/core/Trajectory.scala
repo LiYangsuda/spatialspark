@@ -79,16 +79,16 @@ class Trajectory(val trajectoryID:String,val carID:String,var GPSPoints:List[GPS
       rectangle
     else {
       var top, bottom = GPSPoints.head.latitude
-      var left, right = GPSPoints.head.latitude
+      var left, right = GPSPoints.head.longitude
 
       for (point <- GPSPoints.tail) {
-        if (point.latitude > right) right = point.latitude
-        else if (point.latitude < left) left = point.latitude
+        if (point.latitude > top) top = point.latitude
+        else if (point.latitude < bottom) bottom = point.latitude
 
-        if (point.longitude > top) top = point.longitude
-        else if (point.longitude < bottom) bottom = point.longitude
+        if (point.longitude < left) left = point.longitude
+        else if (point.longitude > right) right = point.longitude
       }
-      rectangle = new Rectangle(right, top, left, bottom)
+      rectangle = new Rectangle(left, top, right, bottom)
       rectangle
     }
   }

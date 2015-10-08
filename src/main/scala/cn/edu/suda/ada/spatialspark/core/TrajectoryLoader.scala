@@ -19,13 +19,18 @@ object HDFSTrajectoryLoader{
     val trajectoryID = fields(1)
     val carID = fields(3)
     var GPSPoints:List[GPSPoint] = Nil
-    val firstGPSPoint = new GPSPoint(fields(22).toFloat,fields(23).toFloat,0,fields(26).toInt,0)
-    GPSPoints = firstGPSPoint:: GPSPoints
+//    val firstGPSPoint = new GPSPoint(fields(22).toFloat,fields(23).toFloat,0,fields(26).toInt,0)
+//    GPSPoints = firstGPSPoint:: GPSPoints
     val records:Array[String] = fields(28).split("\\|")
-    for(record <- records){
+    //The first gps point is different from the rest one. Deal with specially
+    val firstRecord = records(0).split(":")
+    val firstGPSPoint = new GPSPoint(firstRecord(0).toFloat/100000,firstRecord(1).toFloat/100000,firstRecord(2).toInt,firstRecord(3).toLong,firstRecord(4).toShort)
+    GPSPoints = firstGPSPoint:: GPSPoints
+
+    for(record <- records.tail){
       val recordArray = record.split(":")
-      val samplePoint = GPSPoint(recordArray(0).toFloat/100000+firstGPSPoint.latitude,recordArray(1).toFloat/100000+firstGPSPoint.longitude,
-        recordArray(2).toFloat,recordArray(3).toLong+firstGPSPoint.timestamp,recordArray(4).toFloat)
+      val samplePoint = GPSPoint(recordArray(0).toFloat/100000+firstGPSPoint.longitude,recordArray(1).toFloat/100000+firstGPSPoint.latitude,
+        recordArray(2).toFloat,recordArray(3).toLong+firstGPSPoint.timestamp,recordArray(4).toShort)
       GPSPoints = samplePoint :: GPSPoints
     }
 

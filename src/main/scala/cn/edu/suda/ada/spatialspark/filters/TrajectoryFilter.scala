@@ -1,12 +1,13 @@
 package cn.edu.suda.ada.spatialspark.filters
 
-import cn.edu.suda.ada.spatialspark.core.{Trajectory,Range}
+import cn.edu.suda.ada.spatialspark.core.{Range, Trajectory}
 
 /**
  * Created by liyang on 15-9-4.
  */
 trait TrajectoryFilter extends Serializable{
   def doFilter(trajectory:Trajectory):Boolean
+  override def toString: String = "TrajectoryFilter"
 }
 
 /**
@@ -40,6 +41,7 @@ object TrajectoryOTimeFilter extends TrajectoryFilter{
     } //If all this relation don't match, an MatcherError will be thrown.
     result
   }
+  override def toString = "Object TrajectoryOTimeFilter: otime = "+otime + "relation = " + relation
 }
 /**
  * Filter on a single trajectory based on DTime
@@ -71,6 +73,7 @@ object TrajectoryDTimeFilter extends TrajectoryFilter{
     } //If all this relation don't match, an MatcherError will be thrown.
     result
   }
+  override def toString = "Object TrajectoryDTimeFilter: dtime = "+dtime + "relation = " + relation
 }
 /**
  * Filter on a single trajectory based on trajectory
@@ -102,6 +105,7 @@ object TrajectoryTravelTimeFilter extends TrajectoryFilter{
     } //If all this relation don't match, an MatcherError will be thrown.
     result
   }
+  override def toString = "Object TrajectoryTravelTimeFilter: traveltime = "+traveltime + "relation = " + relation
 }
 /**
  * Filter on a single trajectory based on trajectory travel distance
@@ -134,6 +138,7 @@ object TrajectoryTravelDistanceFilter extends TrajectoryFilter{
     } //If all this relation don't match, an MatcherError will be thrown.
     result
   }
+  override def toString = "Object TrajectoryTravelDistanceFilter: travelDistance = "+travelDistance + "relation = " + relation
 }
 /**
  * Filter on a single trajectory based on trajectory's average travel speed
@@ -165,6 +170,7 @@ object TrajectoryAvgSpeedFilter extends TrajectoryFilter{
     } //If all this relation don't match, an MatcherError will be thrown.
     result
   }
+  override def toString = "Object TrajectoryAvgSpeedFilter: averageSpeed = "+averageSpeed + "relation = " + relation
 }
 /**
  * Filter on a single trajectory based on trajectory's average travel speed
@@ -203,6 +209,7 @@ object TrajectoryAvgSampleTimeFilter extends TrajectoryFilter{
     } //If all this relation don't match, an MatcherError will be thrown.
     result
   }
+  override def toString = "Object TrajectoryAvgSampleTimeFilter: otime = "+averageSampleTime + "relation = " + relation
 }
 /**
  * Filter on a single trajectory based on range of the start point
@@ -217,6 +224,7 @@ object TrajectoryOPointFilter extends TrajectoryFilter{
     val p = trajectory.getStartPoint
     range.contains(p.getPoint())
   }
+  override def toString = "Object TrajectoryOPointFilter: range = "+range.toString
 }
 /**
  * Filter on a single trajectory based on range of the end point
@@ -232,6 +240,7 @@ object TrajectoryDPointFilter extends TrajectoryFilter {
 
     range.contains(p.getPoint())
   }
+  override def toString = "TrajectoryDPointFilter: range = "+range.toString
 }
 /**
  * Filter on a single trajectory based on whether the trajectory pass over a particular area
@@ -241,9 +250,18 @@ object TrajectoryPassRangeFilter extends TrajectoryFilter{
   def setParameters(range: Range): Unit ={
     this.range = range
   }
+
+  /**
+   * Test whether there exists a sample point in the passed in Range.
+   * @note If the sample interval is large, this method needs to be reconstruct
+   * @param trajectory
+   * @return Return true if the trajectory passes by the given area, otherwise false.
+   */
   override def doFilter(trajectory: Trajectory): Boolean = {
     trajectory.GPSPoints.exists(point => range.contains(point.getPoint()))
   }
+
+  override def toString = "Object TrajectoryPassRangeFilter: range = "+range.toString
 }
 
 //object GPSPointRangeFilter extends TrajectoryFilter{

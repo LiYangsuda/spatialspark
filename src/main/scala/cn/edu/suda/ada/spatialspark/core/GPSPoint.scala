@@ -4,15 +4,15 @@ package cn.edu.suda.ada.spatialspark.core
  * The class GPSPoint is a representation of a GPS sample point by GPS sensor,which is typically a latLnt together with a timestamp.
  * Created by Graberial on 2015/8/12.
  */
-class GPSPoint(val latitude:Float,val longitude:Float,val speed:Float,val timestamp:Long,val angle:Float){
-  def this(latlng:Point,speed:Float,timestamp:Long,angle:Float){
+class GPSPoint(val longitude:Float,val latitude:Float,val speed:Float,val timestamp:Long,val angle:Short){
+  def this(latlng:Point,speed:Float,timestamp:Long,angle:Short){
     this(latlng.x,latlng.y,speed,timestamp,angle)
   }
 
   /**
    * @return Return a Point object
    */
-  def getPoint():Point = new Point(latitude,longitude)
+  def getPoint():Point = new Point(longitude,latitude)
   /**
    * Getters and Setters
    */
@@ -27,13 +27,13 @@ class GPSPoint(val latitude:Float,val longitude:Float,val speed:Float,val timest
 object GPSPoint{
 
   /**
-   * @param latitude  latitude of the GPS sample point
    * @param longitude longitude of the GPS sample point
+   * @param latitude  latitude of the GPS sample point
    * @param speed      instantaneous  speed of the sample point
    * @param timestamp timestamp of the GPS sample point
    * @return new instance of class GPSPoint
    */
-  def apply(latitude:Float,longitude:Float,speed:Float,timestamp:Long,angle:Float) = new GPSPoint(longitude,longitude,speed,timestamp,angle)
+  def apply(longitude:Float,latitude:Float,speed:Float,timestamp:Long,angle:Short) = new GPSPoint(longitude,latitude,speed,timestamp,angle)
 
   /**
    * instantiate an GPSPoint object with a object point
@@ -42,5 +42,5 @@ object GPSPoint{
    * @param timestamp   timestamp of the GPS sample point
    * @return new instance of class GPSPoint
    */
-  def apply(latlng:Point,speed:Float,timestamp:Long,angle:Float) = new GPSPoint(latlng,speed,timestamp,angle)
+  def apply(latlng:Point,speed:Float,timestamp:Long,angle:Short) = new GPSPoint(latlng,speed,timestamp,angle)
 }

@@ -12,11 +12,11 @@ import org.apache.spark.{SparkConf, SparkContext}
 
 object Test {
   def main(args: Array[String]): Unit = {
-  //  val sc = new SparkContext(new SparkConf().setMaster("local").setAppName("Test"))
-    val sc = new SparkContext(new SparkConf())
+    val sc = new SparkContext(new SparkConf().setMaster("local").setAppName("Test"))
+   // val sc = new SparkContext(new SparkConf())
     Worker.setSparkContext(sc)
-    val inputPath = "hdfs://node1:9000/data/GaoTong/BasicTrajectory/201504/m=04/d=01/BASIS_TRAJECTORY_2015-r-00000"
-  //  val inputPath = "file:///home/liyang/Resources/xaa"
+   // val inputPath = "hdfs://node1:9000/data/GaoTong/BasicTrajectory/201504/m=04/d=01/BASIS_TRAJECTORY_2015-r-00000"
+    val inputPath = "file:///home/liyang/Resources/xaa"
     val rdd = Worker.loadTrajectoryFromDataSource(inputPath)
     //rdd.foreach(tra => println(tra.getTravelDistance+":"+tra.getDuration+":="+tra.getAverageSpeed))
    // val speed = rdd.map(tra => (tra.getAverageSpeed,1)).reduceByKey(_+_,1).sortByKey(true).collect()

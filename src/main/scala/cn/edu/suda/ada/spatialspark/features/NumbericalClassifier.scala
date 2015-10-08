@@ -12,8 +12,8 @@ import cn.edu.suda.ada.spatialspark.core.{GPSPoint, Trajectory}
  */
 
 trait TrajectoryNumericalClassifier{
-  var levelStep: Long = 1
-  def setLevelStep(levelStep : Long): Unit ={
+  var levelStep: Int = 1
+  def setLevelStep(levelStep : Int): Unit ={
     this.levelStep = levelStep
   }
   /**

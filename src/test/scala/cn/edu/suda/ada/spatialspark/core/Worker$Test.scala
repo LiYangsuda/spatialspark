@@ -20,9 +20,9 @@ class Worker$Test extends FlatSpec {
     val rdd2 = Worker.applyFilters(filterMap)
     println("after:"+rdd2.count())
     val dis = Map("TrajTravelDistance"->1000)
-    TrajectoryTravelDistanceClassifier.setLevelStep(100)
-    val feature = Worker.getFeatures(TrajectoryTravelDistanceClassifier.getLevel)
-    feature.foreach(println _)
-
+    TrajectoryTravelDistanceClassifier.setLevelStep(1000)
+    val feature = Worker.calculateFeatures(dis)
+   // feature.foreach(println _)
+    println(Worker.toJson(feature,dis))
   }
 }

@@ -46,8 +46,8 @@ object Worker extends Logging {
 
   /**
    * Get the feature distribution for the given feature
+   *   --Note Here, we use collect to collect all result from the cluster, which will have a big impact on the performance
    * @param feature  a function value that calculate the feature level of the trajectory
-
    * @return  feature distribution
    */
    def getFeatures(feature: Trajectory => Int): Array[(Int, Int)] = {
@@ -64,6 +64,7 @@ object Worker extends Logging {
    * @return
    */
   def calculateFeatures(features: Map[String, Int]): Map[String, Array[(Int, Int)]] = {
+ // def calculateFeatures(features: Map[String,Int]):Worker = {
     if (rdd == null) rdd = originalRDD
     logInfo("calculating the features")
     var distributions = Map[String, Array[(Int, Int)]]()
@@ -130,7 +131,11 @@ object Worker extends Logging {
     "[" + jsonMap.reverse.mkString(",") + "]"
   }
 
-
+  /**
+   * Construct a filter list given the http request parameters
+   * @param filtersParameters
+   * @return
+   */
   private  def constructFilters(filtersParameters: Map[String,Map[String,String]]):List[TrajectoryFilter] = {
     var filters: List[TrajectoryFilter] = Nil
     for(filter <- filtersParameters){
@@ -150,7 +155,7 @@ object Worker extends Logging {
         filters =   TrajectoryTravelTimeFilter :: filters
       }
       if(filter._1.equalsIgnoreCase("TravelDistance")){
-        TrajectoryTravelDistanceFilter.setParameters(filter._2("value").toDouble,filter._2("relation"))
+        TrajectoryTravelDistanceFilter.setParameters(filter._2("value").toFloat,filter._2("relation"))
         logInfo("Applying TravelDistance filter on rdd")
         filters =   TrajectoryTravelDistanceFilter :: filters
       }
@@ -186,16 +191,25 @@ object Worker extends Logging {
     filters
   }
 
+  /**
+   * Apply filters on the trajectories. All the filter parameters are come from end users through http requests
+   * @param filtersParameters  filter parameters from the request
+   * @return rdd after applying filters
+   * @todo NOTE: Here I want to use a broadcast variable to reduce the cost of constructing filter lists every time but failed.
+   */
   def applyFilters(filtersParameters: Map[String,Map[String,String]]):RDD[Trajectory] = {
-    val filters: List[TrajectoryFilter] = constructFilters(filtersParameters)
-
-    logInfo("Filter number: "+filters.length)
+   // val filtersBroadcast: List[TrajectoryFilter] =constructFilters(filtersParameters)
+    //context.broadcast(filtersBroadcast)
+    val filtersbc = context.broadcast(constructFilters(filtersParameters))
+   // logInfo("Filter number: "+filters.length)
     if (originalRDD == null) throw new Exception("Error: trajectory data is null in Worker.applyFilters()")
-    if(rdd == null)   rdd = originalRDD
+     rdd = originalRDD
     logInfo("Applying filters on trajectory rdd")
-    val filterNums = filters.length
+
     rdd = rdd.filter(tra => {
       var flag = true
+    //  val filters = filtersbc.value
+      val filters = Worker.constructFilters(filtersParameters)
       for(filter <- filters if flag) flag = flag && filter.doFilter(tra)
       flag
     })

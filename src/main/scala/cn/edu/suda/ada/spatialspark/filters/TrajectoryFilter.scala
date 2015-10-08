@@ -36,6 +36,7 @@ object TrajectoryOTimeFilter extends TrajectoryFilter{
       case "equal" => t == otime
       case "ngt" => t <= otime
       case "nlt" => t >= otime
+      case _ => throw new IllegalArgumentException("filter relation must be one of: (1) gt (>) (2) lt (<) (3) equal (=) (4) ngt (<=) (5) nlt (>=)")
     } //If all this relation don't match, an MatcherError will be thrown.
     result
   }
@@ -66,6 +67,7 @@ object TrajectoryDTimeFilter extends TrajectoryFilter{
       case "equal" => t == dtime
       case "ngt" => t <= dtime
       case "nlt" => t >= dtime
+      case _ => throw new IllegalArgumentException("filter relation must be one of: (1) gt (>) (2) lt (<) (3) equal (=) (4) ngt (<=) (5) nlt (>=)")
     } //If all this relation don't match, an MatcherError will be thrown.
     result
   }
@@ -96,6 +98,7 @@ object TrajectoryTravelTimeFilter extends TrajectoryFilter{
       case "equal" => ttime == traveltime
       case "ngt" => ttime <= traveltime
       case "nlt" => ttime >= traveltime
+      case _ => throw new IllegalArgumentException("filter relation must be one of: (1) gt (>) (2) lt (<) (3) equal (=) (4) ngt (<=) (5) nlt (>=)")
     } //If all this relation don't match, an MatcherError will be thrown.
     result
   }
@@ -105,7 +108,7 @@ object TrajectoryTravelTimeFilter extends TrajectoryFilter{
  */
 //}
 object TrajectoryTravelDistanceFilter extends TrajectoryFilter{
-  var travelDistance: Double = 0
+  var travelDistance: Float = 0
   var relation: String = ""
 
   /**
@@ -113,7 +116,7 @@ object TrajectoryTravelDistanceFilter extends TrajectoryFilter{
    * @param dis  Start time of the trajectory
    * @param relation Relation for this parameter
    */
-  def setParameters(dis : Double,relation:String): Unit ={
+  def setParameters(dis : Float,relation:String): Unit ={
     this.travelDistance = dis
     this.relation = relation
   }
@@ -126,6 +129,8 @@ object TrajectoryTravelDistanceFilter extends TrajectoryFilter{
       case "equal" => distance == travelDistance
       case "ngt" => distance <= travelDistance
       case "nlt" => distance >= travelDistance
+      case _ => throw new IllegalArgumentException("relation in" +this + "is"+relation+
+        "filter relation must be one of: (1) gt (>) (2) lt (<) (3) equal (=) (4) ngt (<=) (5) nlt (>=)")
     } //If all this relation don't match, an MatcherError will be thrown.
     result
   }
@@ -135,20 +140,20 @@ object TrajectoryTravelDistanceFilter extends TrajectoryFilter{
  */
 
 object TrajectoryAvgSpeedFilter extends TrajectoryFilter{
-  var averageSpeed: Long = 0
+  var averageSpeed: Float = 0
   var relation: String = ""
 
   /**
    * Set the parameters of OTime filter
-   * @param time  Start time of the trajectory
+   * @param avg  Start time of the trajectory
    * @param relation Relation for this parameter
    */
-  def setParameters(time:Long,relation:String): Unit ={
-    this.averageSpeed = time
+  def setParameters(avg: Float,relation:String): Unit ={
+    this.averageSpeed = avg
     this.relation = relation
   }
   def doFilter(trajectory: Trajectory): Boolean = {
-    val rel = "lt"
+
     val avgSpeed = trajectory.getAverageSpeed
 //Use pattern matching to simplify the code above
     val result: Boolean = relation match {
@@ -166,16 +171,16 @@ object TrajectoryAvgSpeedFilter extends TrajectoryFilter{
  */
 
 object TrajectoryAvgSampleTimeFilter extends TrajectoryFilter{
-  var averageSampleTime: Long = 0
+  var averageSampleTime: Float = 0
   var relation: String = ""
 
   /**
    * Set the parameters of OTime filter
-   * @param time  Start time of the trajectory
+   * @param interval  Start time of the trajectory
    * @param relation Relation for this parameter
    */
-  def setParameters(time:Long,relation:String): Unit ={
-    this.averageSampleTime = time
+  def setParameters(interval:Float,relation:String): Unit ={
+    this.averageSampleTime = interval
     this.relation = relation
   }
   def doFilter(trajectory: Trajectory): Boolean = {
@@ -194,6 +199,7 @@ object TrajectoryAvgSampleTimeFilter extends TrajectoryFilter{
       case "equal" => avgInterval == averageSampleTime
       case "ngt" => avgInterval <= averageSampleTime
       case "nlt" => avgInterval >= averageSampleTime
+      case _ => throw new IllegalArgumentException("filter relation must be one of: (1) gt (>) (2) lt (<) (3) equal (=) (4) ngt (<=) (5) nlt (>=)")
     } //If all this relation don't match, an MatcherError will be thrown.
     result
   }

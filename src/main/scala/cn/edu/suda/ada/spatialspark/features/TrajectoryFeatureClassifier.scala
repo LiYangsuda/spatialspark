@@ -30,8 +30,8 @@ object TrajectoryAverageSpeedClassifier extends TrajectoryNumericalClassifier{
 object TrajectoryTravelDistanceClassifier extends TrajectoryNumericalClassifier{
 
   def getLevel(trajectory:Trajectory):Int = {
-    val travelDistance = trajectory.length
-    val level =  (Math.floor(travelDistance / levelStep) * levelStep).toInt
+    val travelDistance = trajectory.getTravelDistance
+    val level =  (travelDistance / levelStep).toInt * levelStep
     level
   }
 }
@@ -41,8 +41,8 @@ object TrajectoryTravelDistanceClassifier extends TrajectoryNumericalClassifier{
 object TrajectoryTravelTimeClassifier extends TrajectoryNumericalClassifier{
 
   def getLevel(trajectory:Trajectory):Int = {
-    val travelTime = trajectory.getEndTime - trajectory.getStarTime
-    val level =  (Math.floor(travelTime / levelStep) * levelStep).toInt
+    val travelTime = trajectory.getDuration
+    val level =  (travelTime / levelStep).toInt * levelStep
     level
   }
 }
@@ -53,7 +53,7 @@ object TrajectoryAvgSimpleTimeClassifier extends TrajectoryNumericalClassifier{
 
   def getLevel(trajectory:Trajectory):Int = {
     val sampleInterval = trajectory.getAverageSampleInterval
-    val level =  (Math.floor(sampleInterval / levelStep) * levelStep).toInt
+    val level = (sampleInterval / levelStep).toInt* levelStep
     level
   }
 }
@@ -64,7 +64,7 @@ object TrajectorySimplePointsCountClassifier extends TrajectoryNumericalClassifi
 
   def getLevel(trajectory:Trajectory):Int = {
     val samplePoints = trajectory.length
-    val level =  (Math.floor(samplePoints / levelStep) * levelStep).toInt
+    val level =  (samplePoints / levelStep) * levelStep
     level
   }
 }

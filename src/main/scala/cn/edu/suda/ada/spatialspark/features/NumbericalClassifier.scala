@@ -28,13 +28,17 @@ trait TrajectoryNumericalClassifier{
  * For a given trajectory, loop through all the sample points and calculate the level for each point.
  * The method getDistribution return the
  */
-trait  GPSPointNumericalClassifier{
-  def getDistribution(trajectory:Trajectory,levelStep:Int):Map[Int,Int]
+trait  GPSPointNumericalClassifier extends Serializable{
+  var levelStep : Int = 1
+  def setLevelStep(level: Int): Unit ={
+    this.levelStep = level
+  }
+  def getLevel(point: GPSPoint):Int = {
+    throw new NoClassDefFoundError("Please create a subclass of GPSPoingNumericalClassifier")
+  }
 }
-
-//object GPSPointSampleSpeedFeature extends GPSPointNumericalClassifier{
-//  def getDistribution(trajectory:Trajectory,levelStep:Int):Map[Int,Int] = {
-//
-//  }
-//
-//}
+trait GPSPointSampleSpeedClassifier extends GPSPointNumericalClassifier{
+  override def getLevel(point: GPSPoint):Int = {
+    (point.speed / levelStep).toInt
+  }
+}

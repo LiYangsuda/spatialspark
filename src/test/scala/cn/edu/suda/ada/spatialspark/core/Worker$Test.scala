@@ -15,16 +15,43 @@ class WorkerTest extends FlatSpec {
   val inputPath = "hdfs://192.168.131.192:9000/data/xaa"
   rdd = Worker.loadTrajectoryFromDataSource(inputPath)
   System.out.println(rdd.count())
+//  val num = rdd.map(tra => tra.GPSPoints.length).sum()
+//  println(num)
+//  "There " should "be 100 trajectories " in{
+//    rdd.foreach(tra => println(tra.getRectangle))
+//  }
+//
+//  "After applyFilters(PassRange), the trajectory number " should "be less than 100" in {
+//    println("Before: "+rdd.count())
+//    val filterMap:Map[String,Map[String,String]] = Map("PassRange" -> Map("minLat" -> "33.226254", "maxLat" -> "46.614256","minLng" -> "107.676595", "maxLng" -> "125.130049"))
+//    val rdd2 = Worker.applyFilters(filterMap)
+//    println("After: "+rdd2.count())
+//  }
 
-  "There " should "be 100 trajectories " in{
-    rdd.foreach(tra => println(tra.getRectangle))
+//  "feature distribution " should "be correct before apply method toJson" in{
+//    rdd.foreach(tra =>  println(tra.getDuration))
+//    val filterPara = Map("TravelDistance"-> Map("value" -> "5000", "relation" -> "lt"))
+//    val rdd2 = Worker.applyFilters(filterPara)
+//    val featurePara = Map("TrajTravelTime"->3600)
+//    val feature = Worker.calculateFeatures(featurePara)
+//    feature.foreach(f => {
+//      f._2.foreach(ff =>{
+//        println(ff._1 +"->"+ff._2)
+//      })
+//    })
+//    println(Worker.toJson(feature,featurePara))
+//  }
+  "No negative data " should "be in the result" in{
+    val feature = Map("GPSSampleSpeed"->10)
+    val distribution = Worker.calculateFeatures(feature)
+    featureDisplay(distribution)
+
   }
-
-  "After applyFilters(PassRange), the trajectory number " should "be less than 100" in {
-    println("Before: "+rdd.count())
-    val filterMap:Map[String,Map[String,String]] = Map("PassRange" -> Map("minLat" -> "33.226254", "maxLat" -> "46.614256","minLng" -> "107.676595", "maxLng" -> "125.130049"))
-    val rdd2 = Worker.applyFilters(filterMap)
-    println("After: "+rdd2.count())
+  def featureDisplay(distributions :Map[String, Array[(Int, Int)]]) = {
+    distributions.foreach(f => {
+      f._2.foreach(ff =>{
+        println(ff._1 +"->"+ff._2)
+      })
+    })
   }
-
 }

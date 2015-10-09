@@ -8,7 +8,7 @@ import scala.math._
  * frequency and similarity between trajectories .etc.
  * @author Graberial
  */
-class Trajectory(val trajectoryID:String,val carID:String,var GPSPoints:List[GPSPoint]) {
+class Trajectory(val trajectoryID:String,val carID:String,var GPSPoints:List[GPSPoint]) extends Serializable{
   var travelDistance: Float = -1  //Total length of travel distance
 
   var rectangle: Rectangle = null //The minimum rectangle that merely covers this trajectory
@@ -92,4 +92,5 @@ class Trajectory(val trajectoryID:String,val carID:String,var GPSPoints:List[GPS
       rectangle
     }
   }
+  override def toString = "Trajectory: Id("+trajectoryID+") carId("+carID+")"
 }

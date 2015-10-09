@@ -4,7 +4,7 @@ package cn.edu.suda.ada.spatialspark.core
  * A class that holds coordinates of a rectangle.
  * Created by Graberial on 2015/8/13.
  */
-class Rectangle(private var upperLeft:Point,private var bottomRight:Point) {
+class Rectangle(private var upperLeft:Point,private var bottomRight:Point) extends Serializable{
   /**
    *Formations of GPS point varies,for instance,using N&S or positive&negative numbers to distinguish the north and the south.
    * In our implementation, GPS points are represented in  Gauss�CKr��ger coordinate system

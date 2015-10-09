@@ -30,8 +30,9 @@ class JettyHttpServlet extends HttpServlet{
       for(param <- filterParameters){
         System.out.println(param.toString())
       }
+      Worker.applyFilters(filterParameters)
     }
-    Worker.applyFilters(filterParameters)
+
 
     /*features are in the format of Map[featureName:String,featureDistribution: Array[(Int,Int)], where the first parameter represents the feature name while the second
       parameter represents the distribution of the feature. Feature distribution is stored in the data structure of Array[Tuple2(lowBound:Int,numbers:Int)]. Here lowBound represent

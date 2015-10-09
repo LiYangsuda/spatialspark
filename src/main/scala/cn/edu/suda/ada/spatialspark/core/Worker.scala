@@ -49,13 +49,17 @@ object Worker extends Logging {
    *   --Note Here, we use collect to collect all result from the cluster, which will have a big impact on the performance
    * @param feature  a function value that calculate the feature level of the trajectory
    * @return  feature distribution
+   * @todo the second map is unnecessary
    */
-   def getFeatures(feature: Trajectory => Int): Array[(Int, Int)] = {
+   def getTrajFeatures(feature: Trajectory => Int): Array[(Int, Int)] = {
 
-    val MapRDD = rdd.map(trajectory => (1, feature(trajectory))).map(t => (t._2, t._1)).reduceByKey(_ + _, 1).sortByKey(true).collect()
+    val MapRDD = rdd.map(trajectory => (1, feature(trajectory))).map(t => (t._2, t._1)).reduceByKey(_ + _, 2).sortByKey(true).collect()
     MapRDD
   }
-
+  def getGPSFeatures(feature: Trajectory => Seq[(Int,Int)]):Array[(Int,Int)] = {
+    val mapRdd = rdd.flatMap(trajectory => feature(trajectory)).map(t => (t._2,t._1)).reduceByKey(_ + _,10).sortByKey(true).collect()
+    mapRdd
+  }
   /**
    * For the feature parameters in the http request, calculate each feature distribution and save the distribution in the result type Array[(Int,Int)]
    * Finally, wrap all feature distribution in the format Map("FEATURE_NAME" -> DISTRIBUTION_OF_THAT_FEATURE)
@@ -73,23 +77,27 @@ object Worker extends Logging {
         featureName match {
           case "TrajAvgSpeed" => {
             TrajectoryAverageSpeedClassifier.setLevelStep(levelStep)
-            getFeatures(TrajectoryAverageSpeedClassifier.getLevel)
+            getTrajFeatures(TrajectoryAverageSpeedClassifier.getLevel)
           }
           case "TrajTravelDistance" => {
             TrajectoryTravelDistanceClassifier.setLevelStep(levelStep)
-            getFeatures(TrajectoryTravelDistanceClassifier.getLevel)
+            getTrajFeatures(TrajectoryTravelDistanceClassifier.getLevel)
           }
           case "TrajTravelTime" => {
-            TrajectoryTravelDistanceClassifier.setLevelStep(levelStep)
-            getFeatures(TrajectoryTravelTimeClassifier.getLevel)
+            TrajectoryTravelTimeClassifier.setLevelStep(levelStep)
+            getTrajFeatures(TrajectoryTravelTimeClassifier.getLevel)
           }
           case "TrajSamplePointsCount" => {
             TrajectorySimplePointsCountClassifier.setLevelStep(levelStep)
-            getFeatures(TrajectorySimplePointsCountClassifier.getLevel)
+            getTrajFeatures(TrajectorySimplePointsCountClassifier.getLevel)
           }
           case "TrajAvgSampleTime" => {
             TrajectoryAvgSimpleTimeClassifier.setLevelStep(levelStep)
-            getFeatures(TrajectoryAvgSimpleTimeClassifier.getLevel)
+            getTrajFeatures(TrajectoryAvgSimpleTimeClassifier.getLevel)
+          }
+          case "GPSSampleSpeed" => {
+            GPSSamplePointSpeedClassifier.setLevelStep(levelStep)
+            getGPSFeatures(GPSSamplePointSpeedClassifier.getDistribution)
           }
         }
       distributions += (featureName -> distribution)
@@ -216,6 +224,7 @@ object Worker extends Logging {
       }
       flag
     })
+    logInfo(rdd.partitions.length.toString)
     rdd
   }
 }

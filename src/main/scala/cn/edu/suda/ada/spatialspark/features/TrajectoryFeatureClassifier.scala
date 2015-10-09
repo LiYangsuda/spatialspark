@@ -68,3 +68,12 @@ object TrajectorySimplePointsCountClassifier extends TrajectoryNumericalClassifi
     level
   }
 }
+
+object GPSSamplePointSpeedClassifier extends GPSPointSampleSpeedClassifier{
+
+   def getDistribution(trajectory: Trajectory): Seq[(Int, Int)] = {
+    val pointMap: Seq[(Int,Int)] =  trajectory.GPSPoints.map(p =>(1, getLevel(p)))
+     pointMap
+  }
+
+}

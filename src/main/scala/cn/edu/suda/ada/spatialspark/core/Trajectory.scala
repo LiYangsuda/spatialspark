@@ -71,6 +71,7 @@ class Trajectory(val trajectoryID:String,val carID:String,var GPSPoints:List[GPS
 
   def getSubTrajectory(interval: Int): Trajectory = {
     val subGPSPoints : List[GPSPoint] = GPSPoints.filter(_.speed > interval)
+    new Trajectory(trajectoryID,carID,subGPSPoints)
   }
   /**
    * @return return the rectangle area that merely covers this trajectory

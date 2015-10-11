@@ -24,9 +24,11 @@ class Range(val lngmin:Double,val latmax:Double,val lngmax:Double,val latmin:Dou
    * @return  Return true if this range contains the point, false otherwise.
    */
   def contains(point:Point):Boolean = {
-    lngmin < point.x && point.x < lngmax && latmin < point.y && point.y < latmax
+    contains(point.x,point.y)
   }
-
+  def contains(lng:Float,lat: Float): Boolean ={
+    lngmin < lng && lng < lngmax && latmin < lat && lat < latmax
+  }
  override def toString = "Range:("+lngmin +","+latmax+","+lngmax+","+latmin+")"
 }
 object Range{

@@ -11,7 +11,7 @@ import scala.math._
 class Trajectory(val trajectoryID:String,val carID:String,var GPSPoints:List[GPSPoint]) extends Serializable{
   var travelDistance: Float = -1  //Total length of travel distance
 
-  var rectangle: Rectangle = null //The minimum rectangle that merely covers this trajectory
+  var range: Range = _ //The minimum rectangle that merely covers this trajectory
 
   /** @return the timestamp of the first GPSPoint in the trajectory */
   def getStarTime = GPSPoints.head.timestamp
@@ -57,26 +57,27 @@ class Trajectory(val trajectoryID:String,val carID:String,var GPSPoints:List[GPS
   /**
    * Get the sub trajectory giving the time limit and rectangle area boundary. This method will create a new Trajectory object
    * while the original one remain unchanged.
-   * @param startTime start time of the this trajectory
-   * @param endTime   end time of the this trajectory
    * @param rect      the minimal rectangle that merely covers the this trajectory
    * @return sub trajectory satisfies the time and pass-by area filter
    */
-  def getSubTrajectory(startTime: Long, endTime: Long, rect: Rectangle): Trajectory = {
+  def getSubTrajectory(rect: Range): Trajectory = {
     var subGPSPoints: List[GPSPoint] = List()
-    for (point <- GPSPoints if point.timestamp > startTime && point.timestamp < endTime && rect.contains(point.latitude, point.longitude)) {
+    for (point <- GPSPoints if rect.contains(point.latitude, point.longitude)) {
       subGPSPoints = point :: subGPSPoints
     }
 
     new Trajectory(trajectoryID, carID,  subGPSPoints.reverse)
   }
 
+  def getSubTrajectory(interval: Int): Trajectory = {
+    val subGPSPoints : List[GPSPoint] = GPSPoints.filter(_.speed > interval)
+  }
   /**
    * @return return the rectangle area that merely covers this trajectory
    */
-  def getRectangle: Rectangle = {
-    if (rectangle != null)
-      rectangle
+  def getRange: Range = {
+    if (range != null)
+      range
     else {
       var top, bottom = GPSPoints.head.latitude
       var left, right = GPSPoints.head.longitude
@@ -88,9 +89,10 @@ class Trajectory(val trajectoryID:String,val carID:String,var GPSPoints:List[GPS
         if (point.longitude < left) left = point.longitude
         else if (point.longitude > right) right = point.longitude
       }
-      rectangle = new Rectangle(left, top, right, bottom)
-      rectangle
+      range = new Range(left, top, right, bottom)
+      range
     }
   }
+
   override def toString = "Trajectory: Id("+trajectoryID+") carId("+carID+")"
 }

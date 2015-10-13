@@ -14,6 +14,9 @@ class WorkerTest extends FlatSpec {
   var rdd: RDD[Trajectory] = null
   val inputPath = "hdfs://192.168.131.192:9000/data/xaa"
   rdd = Worker.loadTrajectoryFromDataSource(inputPath)
+  rdd.foreach(tra => {
+    tra.GPSPoints.foreach(p => {if(p.speed<0) println("Illegal speed"+p.speed)})
+  })
   System.out.println(rdd.count())
 //  val num = rdd.map(tra => tra.GPSPoints.length).sum()
 //  println(num)

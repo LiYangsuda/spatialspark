@@ -4,7 +4,7 @@ package cn.edu.suda.ada.spatialspark.core
  * The class GPSPoint is a representation of a GPS sample point by GPS sensor,which is typically a latLnt together with a timestamp.
  * Created by Graberial on 2015/8/12.
  */
-class GPSPoint(val longitude:Float,val latitude:Float,val speed:Float,val timestamp:Long,val angle:Short) extends Serializable{
+class GPSPoint(val longitude:Float,val latitude:Float,var speed:Float,val timestamp:Long,val angle:Short) extends Serializable{
   def this(latlng:Point,speed:Float,timestamp:Long,angle:Short){
     this(latlng.x,latlng.y,speed,timestamp,angle)
   }

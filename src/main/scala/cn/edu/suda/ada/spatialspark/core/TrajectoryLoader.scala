@@ -24,15 +24,19 @@ object HDFSTrajectoryLoader{
     val records:Array[String] = fields(28).split("\\|")
     //The first gps point is different from the rest one. Deal with specially
     val firstRecord = records(0).split(":")
-    val firstGPSPoint = new GPSPoint(firstRecord(0).toFloat/100000,firstRecord(1).toFloat/100000,firstRecord(2).toInt,firstRecord(3).toLong,firstRecord(4).toShort)
-    GPSPoints = firstGPSPoint:: GPSPoints
+    val firstGPSPoint = new GPSPoint(firstRecord(0).toFloat/100000,firstRecord(1).toFloat/100000,firstRecord(2).toFloat,firstRecord(3).toLong,firstRecord(4).toShort)
+    if(firstGPSPoint.speed < 0) firstGPSPoint.speed = 0
+      GPSPoints = firstGPSPoint :: GPSPoints
 
-    for(record <- records.tail){
-      val recordArray = record.split(":")
-      val samplePoint = GPSPoint(recordArray(0).toFloat/100000+firstGPSPoint.longitude,recordArray(1).toFloat/100000+firstGPSPoint.latitude,
-        recordArray(2).toFloat,recordArray(3).toLong+firstGPSPoint.timestamp,recordArray(4).toShort)
-      GPSPoints = samplePoint :: GPSPoints
-    }
+      for (record <- records.tail) {
+        val recordArray = record.split(":")
+
+        val samplePoint = GPSPoint(recordArray(0).toFloat / 100000 + firstGPSPoint.longitude, recordArray(1).toFloat / 100000 + firstGPSPoint.latitude,
+          Math.round((recordArray(2).toFloat / 3.6) * 100) / 100, recordArray(3).toLong + firstGPSPoint.timestamp, recordArray(4).toShort)
+        if (samplePoint.speed > 0) {
+          GPSPoints = samplePoint :: GPSPoints
+        }
+      }
 
     val trajectory = new Trajectory(trajectoryID,carID, GPSPoints.reverse)
     trajectory.travelDistance = fields(14).toFloat

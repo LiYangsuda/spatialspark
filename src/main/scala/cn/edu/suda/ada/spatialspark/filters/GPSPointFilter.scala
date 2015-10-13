@@ -5,6 +5,7 @@ import cn.edu.suda.ada.spatialspark.core.{Range, Trajectory}
 /**
  * Created by liyang on 15-10-12.
  */
+
 trait GPSPointFilter extends Serializable{
 
   def doFilter(trajectory: Trajectory): Trajectory

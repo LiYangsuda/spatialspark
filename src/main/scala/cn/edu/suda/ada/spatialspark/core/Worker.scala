@@ -2,7 +2,7 @@ package cn.edu.suda.ada.spatialspark.core
 
 import cn.edu.suda.ada.spatialspark.features._
 import cn.edu.suda.ada.spatialspark.filters._
-import org.apache.spark.{Logging, SparkContext}
+import org.apache.spark.{SparkContext, Logging}
 import org.apache.spark.rdd.RDD
 
 import scala.collection.mutable.ArrayBuffer
@@ -15,16 +15,16 @@ import scala.collection.mutable.ArrayBuffer
  * user client
  */
 object Worker extends Logging {
-  var context: SparkContext = null
+  var sc: SparkContext = _
   var rdd: RDD[Trajectory] = null
   var originalRDD: RDD[Trajectory] = null
 
   /**
-   * Set the spark context for the worker, which will be used to loading trajectory from file
-   * @param sc SparkContext
+   * Set the spark sc for the worker, which will be used to loading trajectory from file
+   * @param sc Sparksc
    */
   def setSparkContext(sc: SparkContext) = {
-    context = sc
+    this.sc = sc
   }
 
   /**
@@ -33,9 +33,9 @@ object Worker extends Logging {
    * @return Trajectory RDD of from the file
    */
   def loadTrajectoryFromDataSource(path: String): RDD[Trajectory] = {
-    if (context == null) throw new Exception("SparkContext haven't been initialized in the worker")
+    if (sc == null) throw new Exception("Sparksc haven't been initialized in the worker")
     else {
-      val lines = context.textFile(path)
+      val lines = sc.textFile(path)
       originalRDD = lines.map(HDFSTrajectoryLoader.mapLine2Trajectory).persist()
       val trajectoryCount = originalRDD.count()
       logInfo("There are" + trajectoryCount + "trajectories in the sampling data")
@@ -57,7 +57,7 @@ object Worker extends Logging {
     MapRDD
   }
   def getGPSFeatures(feature: Trajectory => Seq[(Int,Int)]):Array[(Int,Int)] = {
-    val mapRdd = rdd.flatMap(trajectory => feature(trajectory)).map(t => (t._2,t._1)).reduceByKey(_ + _,10).sortByKey(true).collect()
+    val mapRdd = rdd.flatMap(trajectory => feature(trajectory)).map(t => (t._2,t._1)).reduceByKey(_ + _,2).sortByKey(true).collect()
     mapRdd
   }
   /**
@@ -208,9 +208,9 @@ object Worker extends Logging {
    * @todo NOTE: Here I want to use a broadcast variable to reduce the cost of constructing filter lists every time but failed.
    */
   def applyFilters(filtersParameters: Map[String,Map[String,String]]):RDD[Trajectory] = {
-   // val filtersBroadcast: List[TrajectoryFilter] =constructFilters(filtersParameters)
-    //context.broadcast(filtersBroadcast)
-   // val filtersbc = context.broadcast(constructFilters(filtersParameters))
+  //  val filtersBroadcast = sc.broadcast(constructFilters(filtersParameters))
+
+   // val filtersbc = sc.broadcast(constructFilters(filtersParameters))
     if (originalRDD == null) throw new Exception("Error: trajectory data is null in Worker.applyFilters()")
      rdd = originalRDD
     logInfo("Applying filters on trajectory rdd")
@@ -218,6 +218,8 @@ object Worker extends Logging {
     rdd = rdd.filter(tra => {
       var flag = true
       val filters = Worker.constructFilters(filtersParameters)
+      //val filters = filtersBroadcast.value
+      logInfo(filters.toString())
       for(filter <- filters if flag) {
         logInfo(filter.toString)
         flag = flag && filter.doFilter(tra)

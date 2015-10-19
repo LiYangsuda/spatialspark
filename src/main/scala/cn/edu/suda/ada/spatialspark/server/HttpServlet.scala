@@ -33,14 +33,26 @@ class JettyHttpServlet extends HttpServlet{
       Worker.applyFilters(filterParameters)
     }
 
+    if(featureParameters != null){
+      for(feature <- featureParameters){
+        System.out.println(feature)
+      }
+    }
 
     /*features are in the format of Map[featureName:String,featureDistribution: Array[(Int,Int)], where the first parameter represents the feature name while the second
       parameter represents the distribution of the feature. Feature distribution is stored in the data structure of Array[Tuple2(lowBound:Int,numbers:Int)]. Here lowBound represent
      the low bound of a range and numbers represents the number of trajectories that fall into that range. For example, if the passed parameter level step is 2 and a tuple in the
      distribution is (0,1111), that means there are 1111 trajectories that fall into the range [0,2)
     */
+
     val distributions = Worker.calculateFeatures(featureParameters)
-    System.out.println(Worker.toJson(distributions,featureParameters))
+    def featureDisplay(dis: Map[String,Array[(Int,Int)]]): Unit ={
+      dis.foreach(d =>{
+        d._2.foreach(println _)
+      })
+    }
+    featureDisplay(distributions)
+    //System.out.println(Worker.toJson(distributions,featureParameters))
     var out: PrintWriter = null
     try{
       out = resp.getWriter

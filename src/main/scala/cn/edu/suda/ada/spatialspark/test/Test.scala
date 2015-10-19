@@ -28,9 +28,9 @@ object Test {
 //        "hdfs://node1:9000/data/GaoTong/BasicTrajectory/201504/m=04/d=03/BASIS_TRAJECTORY_2015-r-00000"
 //    }
 
-    inputPath = "hdfs://node1:9000/data/GaoTong/BasicTrajectory/201504/m=04/d=01/BASIS_TRAJECTORY_2015-r-00000," +
-      "hdfs://node1:9000/data/GaoTong/BasicTrajectory/201504/m=04/d=02/BASIS_TRAJECTORY_2015-r-00000,"+
-      "hdfs://node1:9000/data/GaoTong/BasicTrajectory/201504/m=04/d=03/BASIS_TRAJECTORY_2015-r-00000"
+    inputPath = "hdfs://node1:9000/data/GaoTong/BasicTrajectory/201504/m=04/d=01/BASIS_TRAJECTORY_2015-r-00000"
+//      "hdfs://node1:9000/data/GaoTong/BasicTrajectory/201504/m=04/d=02/BASIS_TRAJECTORY_2015-r-00000,"+
+//      "hdfs://node1:9000/data/GaoTong/BasicTrajectory/201504/m=04/d=03/BASIS_TRAJECTORY_2015-r-00000"
 
     val rdd = Worker.loadTrajectoryFromDataSource(inputPath)
 

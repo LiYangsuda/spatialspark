@@ -21,8 +21,7 @@ class Trajectory(val trajectoryID:String,val carID:String,var GPSPoints:List[GPS
   /**
    * @return Trajectory travel time
    */
-  def getDuration = GPSPoints.last.timestamp - GPSPoints.head.timestamp
-
+  def getDuration = getEndTime - getStarTime
   /** @return the first GPSPoint in the trajectory */
   def getStartPoint: GPSPoint = GPSPoints.head
 

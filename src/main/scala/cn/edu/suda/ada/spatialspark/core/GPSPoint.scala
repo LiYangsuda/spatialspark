@@ -20,6 +20,7 @@ class GPSPoint(val longitude:Float,val latitude:Float,var speed:Float,val timest
 //  def setLat(latitude:Double) { this.latitude = latitude}
 //  def getLng:Double = y
 //  def setLng(longitude:Double){y = longitude}
+  override def toString = "Lng: "+longitude +" Lat: " + latitude +" Speed: " + speed + " Timestamp: "+ timestamp
 }
 /**
  * companion object of class GPSPoint, with two apply methods for  instantiating GPSPoint object.

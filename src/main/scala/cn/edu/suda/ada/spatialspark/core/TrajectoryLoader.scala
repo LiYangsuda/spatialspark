@@ -16,29 +16,34 @@ object HDFSTrajectoryLoader{
    */
   def mapLine2Trajectory(s: String):Trajectory = {
     val fields = s.split(",")
-    val trajectoryID = fields(1)
-    val carID = fields(3)
+    val trajectoryID = fields(0)
+
+    val carID = fields(2)
+//    println(trajectoryID+","+carID)
     var GPSPoints:List[GPSPoint] = Nil
-//    val firstGPSPoint = new GPSPoint(fields(22).toFloat,fields(23).toFloat,0,fields(26).toInt,0)
-//    GPSPoints = firstGPSPoint:: GPSPoints
+
     val records:Array[String] = fields(28).split("\\|")
+//    println(records.head.split(":")(3)+"::"+records.last.split(":")(3))
+
     //The first gps point is different from the rest one. Deal with specially
     val firstRecord = records(0).split(":")
     val firstGPSPoint = new GPSPoint(firstRecord(0).toFloat/100000,firstRecord(1).toFloat/100000,firstRecord(2).toFloat,firstRecord(3).toLong,firstRecord(4).toShort)
-    if(firstGPSPoint.speed < 0) firstGPSPoint.speed = 0
-      GPSPoints = firstGPSPoint :: GPSPoints
 
+    if(firstGPSPoint.speed < 0){firstGPSPoint.speed = 0}
+      GPSPoints = firstGPSPoint :: GPSPoints
+    val startTime = firstGPSPoint.timestamp
       for (record <- records.tail) {
         val recordArray = record.split(":")
-
         val samplePoint = GPSPoint(recordArray(0).toFloat / 100000 + firstGPSPoint.longitude, recordArray(1).toFloat / 100000 + firstGPSPoint.latitude,
-          Math.round((recordArray(2).toFloat / 3.6) * 100) / 100, recordArray(3).toLong + firstGPSPoint.timestamp, recordArray(4).toShort)
-        if (samplePoint.speed > 0) {
-          GPSPoints = samplePoint :: GPSPoints
+          Math.round((recordArray(2).toFloat / 3.6) * 100) / 100, recordArray(3).toLong + startTime , recordArray(4).toShort)
+        if (samplePoint.speed < 0) {
+          samplePoint.speed = 0
         }
+        GPSPoints = samplePoint :: GPSPoints
       }
 
     val trajectory = new Trajectory(trajectoryID,carID, GPSPoints.reverse)
+    if(trajectory.getDuration == 0)println(trajectoryID)
     trajectory.travelDistance = fields(14).toFloat
     trajectory
   }

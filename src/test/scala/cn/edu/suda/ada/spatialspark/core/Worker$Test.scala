@@ -1,6 +1,7 @@
 package cn.edu.suda.ada.spatialspark.core
 
-import cn.edu.suda.ada.spatialspark.features.{TrajectoryTravelDistanceClassifier, TrajectoryAverageSpeedClassifier}
+//import cn.edu.suda.ada.spatialspark.features.{TrajectoryTravelDistanceClassifier, TrajectoryAverageSpeedClassifier}
+import cn.edu.suda.ada.spatialspark.server.{JettyHttpServlet, JettyEmbedServer}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest.FlatSpec
@@ -14,12 +15,14 @@ class WorkerTest extends FlatSpec {
   var rdd: RDD[Trajectory] = null
   val inputPath = "hdfs://192.168.131.192:9000/data/xaa"
   rdd = Worker.loadTrajectoryFromDataSource(inputPath)
-//  System.out.println(rdd.count())
-//  val num = rdd.map(tra => tra.GPSPoints.length).sum()
-//  println(num)
-//  "There " should "be 100 trajectories " in{
-//    rdd.foreach(tra => println(tra.getRectangle))
-//  }
+
+  val feature = Map("TrajAvgSpeed"->10)
+  //TrajectoryAverageSpeedClassifier.setLevelStep(10)
+  val dis = Worker.calculateFeatures(feature)
+  featureDisplay(dis)
+  println(Worker.toJson(dis,feature))
+//    .reduceByKey(_ + _, 2).sortByKey(true).collect()
+//  featureDisplay(dis)
   /**
    * 测试PassRange的filter不起作用问题
   */
@@ -54,12 +57,12 @@ class WorkerTest extends FlatSpec {
 //    featureDisplay(distribution)
 //
 //  }
-  "TrajTravelDistance feature in json format" should "be correct before passed to frontend" in {
-    val feature = Map("TrajTravelDistance"->1000)
-    val distribution = Worker.calculateFeatures(feature)
-    featureDisplay(distribution)
-    println(Worker.toJson(distribution,Map("TrajTravelDistance"->1000)))
-  }
+//  "TrajTravelDistance feature in json format" should "be correct before passed to frontend" in {
+//    val feature = Map("TrajTravelDistance"->1000)
+//    val distribution = Worker.calculateFeatures(feature)
+//    featureDisplay(distribution)
+//    println(Worker.toJson(distribution,Map("TrajTravelDistance"->1000)))
+//  }
   /**
    * 将获取到的feature distribution打印出来
    * @param distributions
@@ -71,5 +74,18 @@ class WorkerTest extends FlatSpec {
       })
     })
   }
-
+  def featureDisplay(distribution: Array[(Int,Int)]) = {
+    distribution.foreach(f => println(f._1 + "->"+f._2))
+  }
+  /**
+   * 测试返回的数据没有按照levelStep的设定增长 （0，10）（10,20）……而是错误的：（0,10），（1,11）……
+   */
+ // "levelStep" should "be grown step by step " in {
+//    val feature = Map("TrajAvgSpeed"->10)
+////    val distribution  = Worker.calculateFeatures(feature)
+////    featureDisplay(distribution)
+//    TrajectoryAverageSpeedClassifier.setLevelStep(10)
+//    val distribution = Worker.getTrajFeatures(t => TrajectoryAverageSpeedClassifier.getLevel(t))
+//    featureDisplay(distribution)
+//  }
 }

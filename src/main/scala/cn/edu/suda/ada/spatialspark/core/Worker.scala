@@ -36,7 +36,7 @@ object Worker extends Logging {
     if (sc == null) throw new Exception("Sparksc haven't been initialized in the worker")
     else {
       val lines = sc.textFile(path)
-      originalRDD = lines.map(HDFSTrajectoryLoader.mapLine2Trajectory).persist()
+      originalRDD = lines.map(line => HDFSTrajectoryLoader.mapLine2Trajectory(line)).persist()
       val trajectoryCount = originalRDD.count()
       logInfo("There are" + trajectoryCount + "trajectories in the sampling data")
 
@@ -53,7 +53,7 @@ object Worker extends Logging {
    */
    def getTrajFeatures(feature: Trajectory => Int): Array[(Int, Int)] = {
 
-    val MapRDD = rdd.map(trajectory => (1, feature(trajectory))).map(t => (t._2, t._1)).reduceByKey(_ + _, 2).sortByKey(true).collect()
+    val MapRDD = rdd.map(trajectory => (feature(trajectory),1)).reduceByKey(_ + _, 2).sortByKey(true).collect()
     MapRDD
   }
   def getGPSFeatures(feature: Trajectory => Seq[(Int,Int)]):Array[(Int,Int)] = {
@@ -70,30 +70,36 @@ object Worker extends Logging {
   def calculateFeatures(features: Map[String, Int]): Map[String, Array[(Int, Int)]] = {
  // def calculateFeatures(features: Map[String,Int]):Worker = {
     if (rdd == null) rdd = originalRDD
-    logInfo("calculating the features")
+    logInfo("calculating the features:")
+
     var distributions = Map[String, Array[(Int, Int)]]()
     for ((featureName,levelStep) <- features) {
       val distribution =
         featureName match {
+
           case "TrajAvgSpeed" => {
-            TrajectoryAverageSpeedClassifier.setLevelStep(levelStep)
-            getTrajFeatures(TrajectoryAverageSpeedClassifier.getLevel)
+            //TrajectoryAverageSpeedClassifier.setLevelStep(levelStep)
+            getTrajFeatures((tra: Trajectory) => TrajectoryAverageSpeedClassifier.getLevel(tra,levelStep))
           }
           case "TrajTravelDistance" => {
-            TrajectoryTravelDistanceClassifier.setLevelStep(levelStep)
-            getTrajFeatures(TrajectoryTravelDistanceClassifier.getLevel)
+           // TrajectoryTravelDistanceClassifier.setLevelStep(levelStep)
+          //  getTrajFeatures(TrajectoryTravelDistanceClassifier.getLevel)
+            getTrajFeatures((tra: Trajectory) => TrajectoryTravelDistanceClassifier.getLevel(tra,levelStep))
           }
           case "TrajTravelTime" => {
-            TrajectoryTravelTimeClassifier.setLevelStep(levelStep)
-            getTrajFeatures(TrajectoryTravelTimeClassifier.getLevel)
+//            TrajectoryTravelTimeClassifier.setLevelStep(levelStep)
+//            getTrajFeatures(TrajectoryTravelTimeClassifier.getLevel)
+            getTrajFeatures((tra: Trajectory) => TrajectoryTravelTimeClassifier.getLevel(tra,levelStep))
           }
           case "TrajSamplePointsCount" => {
-            TrajectorySimplePointsCountClassifier.setLevelStep(levelStep)
-            getTrajFeatures(TrajectorySimplePointsCountClassifier.getLevel)
+//            TrajectorySimplePointsCountClassifier.setLevelStep(levelStep)
+//            getTrajFeatures(TrajectorySimplePointsCountClassifier.getLevel)
+            getTrajFeatures((tra: Trajectory) => TrajectorySimplePointsCountClassifier.getLevel(tra,levelStep))
           }
           case "TrajAvgSampleTime" => {
-            TrajectoryAvgSimpleTimeClassifier.setLevelStep(levelStep)
-            getTrajFeatures(TrajectoryAvgSimpleTimeClassifier.getLevel)
+//            TrajectoryAvgSimpleTimeClassifier.setLevelStep(levelStep)
+//            getTrajFeatures(TrajectoryAvgSimpleTimeClassifier.getLevel)
+            getTrajFeatures((tra: Trajectory) => TrajectoryAvgSimpleTimeClassifier.getLevel(tra,levelStep))
           }
           case "GPSSampleSpeed" => {
             GPSSamplePointSpeedClassifier.setLevelStep(levelStep)

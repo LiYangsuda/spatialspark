@@ -19,8 +19,7 @@ class WorkerTest extends FlatSpec {
   val feature = Map("TrajAvgSpeed"->10)
   //TrajectoryAverageSpeedClassifier.setLevelStep(10)
   val dis = Worker.calculateFeatures(feature)
-  featureDisplay(dis)
-  println(Worker.toJson(dis,feature))
+
 //    .reduceByKey(_ + _, 2).sortByKey(true).collect()
 //  featureDisplay(dis)
   /**

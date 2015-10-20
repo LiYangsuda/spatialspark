@@ -24,7 +24,9 @@ class JettyHttpServlet extends HttpServlet{
     resp.setHeader("Connection","keep-alive")
     resp.setHeader("Access-Control-Allow-Origin","*")
     val filterParameters = getFilterMap(req)
-    val featureParameters = getFeatureMap(req)
+    //val featureParameters = getFeatureMap(req)
+    val features = getFeatures(req)
+    val featureParameters = getProperLevelStep(features,filterParameters)
     // Print out the parameters in the Http request. For testing purpose only
     if(filterParameters != null){
       for(param <- filterParameters){
@@ -46,6 +48,10 @@ class JettyHttpServlet extends HttpServlet{
     */
 
     val distributions = Worker.calculateFeatures(featureParameters)
+    /**
+     * for testing only
+     * @param dis
+     */
     def featureDisplay(dis: Map[String,Array[(Int,Int)]]): Unit ={
       dis.foreach(d =>{
         d._2.foreach(println _)
@@ -74,7 +80,7 @@ class JettyHttpServlet extends HttpServlet{
    * @param request Http request from client
    * @return Parameters of expected feature.Type:Map[featureName:String,featureLevelStep:Int]
    */
-  def getFeatureMap(request: HttpServletRequest):Map[String,Int] = {
+  @deprecated def getFeatureMap(request: HttpServletRequest):Map[String,Int] = {
     var parameterMap = Map[String,Int]()
     val params = request.getParameter("features")
     if(params != null && params.contains(",")){
@@ -86,6 +92,17 @@ class JettyHttpServlet extends HttpServlet{
       parameterMap += (params -> request.getParameter("feature."+params+".levelStep").toInt)
     }
     parameterMap
+  }
+
+  def getFeatures(request: HttpServletRequest):Array[String] = {
+    val params = request.getParameter("features")
+    var paramsArray = Array[String]()
+    if(params.contains(",")){
+      paramsArray = Array(params)
+    }else{
+      paramsArray = params.split(",")
+    }
+    paramsArray
   }
 
   /**
@@ -132,6 +149,74 @@ class JettyHttpServlet extends HttpServlet{
         }
         parameterMap += (key -> filterParams)
       }
+    }
+    parameterMap
+  }
+
+
+  private def getProperLevelStep(features: Array[String],filters: Map[String,Map[String,String]]): Map[String,Int]= {
+    var parameterMap = Map[String,Int]()
+    for(feature <- features){
+      var levelStep = 1
+      feature match {
+        case "TrajAvgSpeed" => {
+          val filter = filters.get("AvgSpeed")
+          if(filter != None){                   //if avgspeed filter exists
+            if(filter.get("relation") == "lt"){
+             levelStep =  filter.get("value").toInt / 20
+            }else{
+            levelStep =   Math.abs(100 - filter.get("value").toInt) / 20
+            }
+          }else {
+            levelStep = 10 //default levelstep
+          }
+        }
+        case "TrajTravelDistance" => {
+          val filter = filters.get("TravelDistance")
+          if(filter != None){                   //if avgspeed filter exists
+            if(filter.get("relation") == "lt"){
+              levelStep =    filter.get("value").toInt / 20
+            }else{
+              levelStep =     Math.abs(200000 - filter.get("value").toInt) / 20
+            }
+            println(levelStep)
+          }else{
+            levelStep =    10000             //default levelstep
+          }
+        }
+        case "TrajTravelTime" => {
+          val filter = filters.get("TravelTime")
+          if(filter != None){                   //if avgspeed filter exists
+            if(filter.get("relation") == "lt"){
+              levelStep =    filter.get("value").toInt / 20
+            }else{
+              levelStep =    Math.abs(36000 - filter.get("value").toInt) / 20
+            }
+          }else{
+            levelStep =    36000
+          }
+        }
+        case "TrajSamplePointsCount" => {
+          levelStep = 100
+        }
+        case "TrajAvgSampleTime" => {
+          val filter = filters.get("AvgSampleTime")
+          if(filter != None){                   //if avgspeed filter exists
+            if(filter.get("relation") == "lt"){
+              levelStep =      filter.get("value").toInt / 20
+            }else{
+              levelStep =     Math.abs(200 - filter.get("value").toInt) / 20
+            }
+          }else{
+            levelStep =    10
+          }
+        }
+        case "GPSSampleSpeed" => {
+          levelStep =    10
+        }
+        case _ => levelStep =   1000
+      }
+      parameterMap += (feature -> levelStep)
     }
     parameterMap
   }

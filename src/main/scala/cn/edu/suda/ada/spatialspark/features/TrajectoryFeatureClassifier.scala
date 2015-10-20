@@ -11,10 +11,10 @@ import org.apache.spark.Logging
  *  Singleton object for dividing the trajectories according to the average speed
  */
 object TrajectoryAverageSpeedClassifier extends TrajectoryNumericalClassifier with Logging{
-//  var levelStep: Int = 1
-//  def setLevelStep(levelStep : Int): Unit ={
-//    this.levelStep = levelStep
-//  }
+  //  var levelStep: Int = 1
+  //  def setLevelStep(levelStep : Int): Unit ={
+  //    this.levelStep = levelStep
+  //  }
   /**
    * This method  calculates trajectory level according to its average speed and divide it into some slot.
    * Note that we map this trajectory to its low bound speed slot. For example, if the levelstep is 2 and the trajectory A's
@@ -91,9 +91,9 @@ object TrajectorySimplePointsCountClassifier extends TrajectoryNumericalClassifi
 
 object GPSSamplePointSpeedClassifier extends GPSPointSampleSpeedClassifier{
 
-   def getDistribution(trajectory: Trajectory): Seq[(Int, Int)] = {
+  def getDistribution(trajectory: Trajectory): Seq[(Int, Int)] = {
     val pointMap: Seq[(Int,Int)] =  trajectory.GPSPoints.map(p =>(1, getLevel(p)))
-     pointMap
+    pointMap
   }
 
 }

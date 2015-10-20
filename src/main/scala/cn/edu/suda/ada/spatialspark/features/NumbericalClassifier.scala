@@ -37,6 +37,6 @@ trait  GPSPointNumericalClassifier extends Serializable{
 trait GPSPointSampleSpeedClassifier extends GPSPointNumericalClassifier{
   override def getLevel(point: GPSPoint):Int = {
     (point.speed.toInt / levelStep) * levelStep
-   // point.speed.toInt / levelStep
+    // point.speed.toInt / levelStep
   }
 }

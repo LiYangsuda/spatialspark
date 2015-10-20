@@ -51,7 +51,7 @@ object Worker extends Logging {
    * @return  feature distribution
    * @todo the second map is unnecessary
    */
-   def getTrajFeatures(feature: Trajectory => Int): Array[(Int, Int)] = {
+  def getTrajFeatures(feature: Trajectory => Int): Array[(Int, Int)] = {
 
     val MapRDD = rdd.map(trajectory => (feature(trajectory),1)).reduceByKey(_ + _, 2).sortByKey(true).collect()
     MapRDD
@@ -68,7 +68,7 @@ object Worker extends Logging {
    * @return
    */
   def calculateFeatures(features: Map[String, Int]): Map[String, Array[(Int, Int)]] = {
- // def calculateFeatures(features: Map[String,Int]):Worker = {
+    // def calculateFeatures(features: Map[String,Int]):Worker = {
     if (rdd == null) rdd = originalRDD
     logInfo("calculating the features:")
 
@@ -82,23 +82,23 @@ object Worker extends Logging {
             getTrajFeatures((tra: Trajectory) => TrajectoryAverageSpeedClassifier.getLevel(tra,levelStep))
           }
           case "TrajTravelDistance" => {
-           // TrajectoryTravelDistanceClassifier.setLevelStep(levelStep)
-          //  getTrajFeatures(TrajectoryTravelDistanceClassifier.getLevel)
+            // TrajectoryTravelDistanceClassifier.setLevelStep(levelStep)
+            //  getTrajFeatures(TrajectoryTravelDistanceClassifier.getLevel)
             getTrajFeatures((tra: Trajectory) => TrajectoryTravelDistanceClassifier.getLevel(tra,levelStep))
           }
           case "TrajTravelTime" => {
-//            TrajectoryTravelTimeClassifier.setLevelStep(levelStep)
-//            getTrajFeatures(TrajectoryTravelTimeClassifier.getLevel)
+            //            TrajectoryTravelTimeClassifier.setLevelStep(levelStep)
+            //            getTrajFeatures(TrajectoryTravelTimeClassifier.getLevel)
             getTrajFeatures((tra: Trajectory) => TrajectoryTravelTimeClassifier.getLevel(tra,levelStep))
           }
           case "TrajSamplePointsCount" => {
-//            TrajectorySimplePointsCountClassifier.setLevelStep(levelStep)
-//            getTrajFeatures(TrajectorySimplePointsCountClassifier.getLevel)
+            //            TrajectorySimplePointsCountClassifier.setLevelStep(levelStep)
+            //            getTrajFeatures(TrajectorySimplePointsCountClassifier.getLevel)
             getTrajFeatures((tra: Trajectory) => TrajectorySimplePointsCountClassifier.getLevel(tra,levelStep))
           }
           case "TrajAvgSampleTime" => {
-//            TrajectoryAvgSimpleTimeClassifier.setLevelStep(levelStep)
-//            getTrajFeatures(TrajectoryAvgSimpleTimeClassifier.getLevel)
+            //            TrajectoryAvgSimpleTimeClassifier.setLevelStep(levelStep)
+            //            getTrajFeatures(TrajectoryAvgSimpleTimeClassifier.getLevel)
             getTrajFeatures((tra: Trajectory) => TrajectoryAvgSimpleTimeClassifier.getLevel(tra,levelStep))
           }
           case "GPSSampleSpeed" => {
@@ -156,7 +156,7 @@ object Worker extends Logging {
       if(filter._1 == "OTime"){
         TrajectoryOTimeFilter.setParameters(filter._2("value").toLong,filter._2("relation"))
         logInfo("Applying OTime filter on rdd. OTime.value = "+filter._2("value")+" filter relation: "+filter._2("relation"))
-       filters =  TrajectoryOTimeFilter :: filters
+        filters =  TrajectoryOTimeFilter :: filters
       }
       if(filter._1 == "DTime"){
         TrajectoryDTimeFilter.setParameters(filter._2("value").toLong,filter._2("relation"))
@@ -214,18 +214,17 @@ object Worker extends Logging {
    * @todo NOTE: Here I want to use a broadcast variable to reduce the cost of constructing filter lists every time but failed.
    */
   def applyFilters(filtersParameters: Map[String,Map[String,String]]):RDD[Trajectory] = {
-  //  val filtersBroadcast = sc.broadcast(constructFilters(filtersParameters))
+    //  val filtersBroadcast = sc.broadcast(constructFilters(filtersParameters))
 
-   // val filtersbc = sc.broadcast(constructFilters(filtersParameters))
+    // val filtersbc = sc.broadcast(constructFilters(filtersParameters))
     if (originalRDD == null) throw new Exception("Error: trajectory data is null in Worker.applyFilters()")
-     rdd = originalRDD
+    rdd = originalRDD
     logInfo("Applying filters on trajectory rdd")
 
     rdd = rdd.filter(tra => {
       var flag = true
       val filters = Worker.constructFilters(filtersParameters)
       //val filters = filtersBroadcast.value
-      logInfo(filters.toString())
       for(filter <- filters if flag) {
         logInfo(filter.toString)
         flag = flag && filter.doFilter(tra)

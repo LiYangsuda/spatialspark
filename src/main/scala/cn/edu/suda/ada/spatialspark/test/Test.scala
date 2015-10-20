@@ -12,8 +12,8 @@ import org.apache.spark.{SparkConf, SparkContext}
 
 object Test {
   def main(args: Array[String]): Unit = {
-   // val sc = new SparkContext(new SparkConf().setMaster("local").setAppName("Test"))
-    val sc = new SparkContext(new SparkConf())
+    //val sc = new SparkContext(new SparkConf().setMaster("local").setAppName("Test"))
+   val sc = new SparkContext(new SparkConf())
     Worker.setSparkContext(sc)
 
     //set the input path of the data
@@ -27,9 +27,9 @@ object Test {
 //        ",hdfs://node1:9000/data/GaoTong/BasicTrajectory/201504/m=04/d=02/BASIS_TRAJECTORY_2015-r-00000,"+
 //        "hdfs://node1:9000/data/GaoTong/BasicTrajectory/201504/m=04/d=03/BASIS_TRAJECTORY_2015-r-00000"
 //    }
-
-    inputPath = "hdfs://node1:9000/data/GaoTong/BasicTrajectory/201504/m=04/d=01/BASIS_TRAJECTORY_2015-r-00000"
-//      "hdfs://node1:9000/data/GaoTong/BasicTrajectory/201504/m=04/d=02/BASIS_TRAJECTORY_2015-r-00000,"+
+ //   inputPath = "hdfs://192.168.131.192:9000/data/xaa"
+    inputPath = "hdfs://node1:9000/data/GaoTong/BasicTrajectory/201504/m=04/d=01/BASIS_TRAJECTORY_2015-r-00000,"+
+      "hdfs://node1:9000/data/GaoTong/BasicTrajectory/201504/m=04/d=02/BASIS_TRAJECTORY_2015-r-00000"
 //      "hdfs://node1:9000/data/GaoTong/BasicTrajectory/201504/m=04/d=03/BASIS_TRAJECTORY_2015-r-00000"
 
     val rdd = Worker.loadTrajectoryFromDataSource(inputPath)

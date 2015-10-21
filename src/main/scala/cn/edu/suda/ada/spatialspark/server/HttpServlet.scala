@@ -10,6 +10,18 @@ import org.apache.spark.Logging
  */
 class JettyHttpServlet extends HttpServlet{
   private final  val serialVersionUID = 1L
+
+//  override def doPost(req:HttpServletRequest,resp:HttpServletResponse){
+//    val filterParameters = getFilterMap(req)
+//    val featureNames = getFeatures(req)
+//    val featureParameters = getProperLevelStep(featureNames,filterParameters)
+//
+//    if(featureParameters != null){
+//      for(feature <- featureParameters){
+//        println(feature._1 +" -> "+feature._2)
+//      }
+//    }
+//  }
   /**
    * The method doPost do nothing but write hello world to the client
    * @param req
@@ -48,15 +60,7 @@ class JettyHttpServlet extends HttpServlet{
     */
 
     val distributions = Worker.calculateFeatures(featureParameters)
-    /**
-     * for testing only
-     * @param dis
-     */
-    def featureDisplay(dis: Map[String,Array[(Int,Int)]]): Unit ={
-      dis.foreach(d =>{
-        d._2.foreach(println _)
-      })
-    }
+
     featureDisplay(distributions)
     //System.out.println(Worker.toJson(distributions,featureParameters))
     var out: PrintWriter = null
@@ -98,9 +102,9 @@ class JettyHttpServlet extends HttpServlet{
     val params = request.getParameter("features")
     var paramsArray = Array[String]()
     if(params.contains(",")){
-      paramsArray = Array(params)
-    }else{
       paramsArray = params.split(",")
+    }else{
+      paramsArray = Array(params)
     }
     paramsArray
   }
@@ -157,6 +161,7 @@ class JettyHttpServlet extends HttpServlet{
   private def getProperLevelStep(features: Array[String],filters: Map[String,Map[String,String]]): Map[String,Int]= {
     var parameterMap = Map[String,Int]()
     for(feature <- features){
+      println(feature)
       var levelStep = 1
       feature match {
         case "TrajAvgSpeed" => {
@@ -193,11 +198,11 @@ class JettyHttpServlet extends HttpServlet{
               levelStep =    Math.abs(36000 - filter.get("value").toInt) / 20
             }
           }else{
-            levelStep =    36000
+            levelStep =    3600
           }
         }
         case "TrajSamplePointsCount" => {
-          levelStep = 100
+          levelStep = 1000
         }
         case "TrajAvgSampleTime" => {
           val filter = filters.get("AvgSampleTime")
@@ -219,5 +224,14 @@ class JettyHttpServlet extends HttpServlet{
       parameterMap += (feature -> levelStep)
     }
     parameterMap
+  }
+  /**
+   * for testing only
+   * @param dis
+   */
+  @volatile def featureDisplay(dis: Map[String,Array[(Int,Int)]]): Unit ={
+    dis.foreach(d =>{
+      d._2.foreach(println _)
+    })
   }
 }

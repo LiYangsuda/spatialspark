@@ -26,16 +26,13 @@ trait TrajectoryNumericalClassifier{
  * The method getDistribution return the
  */
 trait  GPSPointNumericalClassifier extends Serializable{
-  var levelStep : Int = 1
-  def setLevelStep(level: Int): Unit ={
-    this.levelStep = level
-  }
-  def getLevel(point: GPSPoint):Int = {
+
+  def getLevel(point: GPSPoint,levelStep: Int):Int = {
     throw new NoClassDefFoundError("Please create a subclass of GPSPoingNumericalClassifier")
   }
 }
 trait GPSPointSampleSpeedClassifier extends GPSPointNumericalClassifier{
-  override def getLevel(point: GPSPoint):Int = {
+  override def getLevel(point: GPSPoint,levelStep: Int):Int = {
     (point.speed.toInt / levelStep) * levelStep
     // point.speed.toInt / levelStep
   }

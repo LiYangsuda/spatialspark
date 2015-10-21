@@ -102,8 +102,8 @@ object Worker extends Logging {
             getTrajFeatures((tra: Trajectory) => TrajectoryAvgSimpleTimeClassifier.getLevel(tra,levelStep))
           }
           case "GPSSampleSpeed" => {
-            GPSSamplePointSpeedClassifier.setLevelStep(levelStep)
-            getGPSFeatures(GPSSamplePointSpeedClassifier.getDistribution)
+           // GPSSamplePointSpeedClassifier.setLevelStep(levelStep)
+            getGPSFeatures((tra: Trajectory) => GPSSamplePointSpeedClassifier.getDistribution(tra,levelStep))
           }
         }
       distributions += (featureName -> distribution)

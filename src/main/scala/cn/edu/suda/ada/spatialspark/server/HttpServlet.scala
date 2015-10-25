@@ -165,56 +165,68 @@ class JettyHttpServlet extends HttpServlet{
       var levelStep = 1
       feature match {
         case "TrajAvgSpeed" => {
-          val filter = filters.get("AvgSpeed")
-          if(filter != None){                   //if avgspeed filter exists
-            if(filter.get("relation") == "lt"){
-             levelStep =  filter.get("value").toInt / 20
-            }else{
-            levelStep =   Math.abs(100 - filter.get("value").toInt) / 20
+          if(filters != null){
+            val filter = filters.get("AvgSpeed")
+            if(filter != None){                   //if avgspeed filter exists
+              if(filter.get("relation") == "lt"){
+                levelStep =  filter.get("value").toInt / 20
+              }else{
+                levelStep =   Math.abs(100 - filter.get("value").toInt) / 20
+              }
+            }else {
+              levelStep = 10 //default levelstep
             }
-          }else {
-            levelStep = 10 //default levelstep
           }
+
         }
         case "TrajTravelDistance" => {
-          val filter = filters.get("TravelDistance")
-          if(filter != None){                   //if avgspeed filter exists
-            if(filter.get("relation") == "lt"){
-              levelStep =    filter.get("value").toInt / 20
+          if(filters != null){
+            val filter = filters.get("TravelDistance")
+            if(filter != None){                   //if avgspeed filter exists
+              if(filter.get("relation") == "lt"){
+                levelStep =    filter.get("value").toInt / 20
+              }else{
+                levelStep =     Math.abs(200000 - filter.get("value").toInt) / 20
+              }
+              println(levelStep)
             }else{
-              levelStep =     Math.abs(200000 - filter.get("value").toInt) / 20
+              levelStep =    10000             //default levelstep
             }
-            println(levelStep)
-          }else{
-            levelStep =    10000             //default levelstep
           }
+
         }
         case "TrajTravelTime" => {
-          val filter = filters.get("TravelTime")
-          if(filter != None){                   //if avgspeed filter exists
-            if(filter.get("relation") == "lt"){
-              levelStep =    filter.get("value").toInt / 20
+          if(filters != null){
+            val filter = filters.get("TravelTime")
+            if(filter != None){                   //if avgspeed filter exists
+              if(filter.get("relation") == "lt"){
+                levelStep =    filter.get("value").toInt / 20
+              }else{
+                levelStep =    Math.abs(36000 - filter.get("value").toInt) / 20
+              }
             }else{
-              levelStep =    Math.abs(36000 - filter.get("value").toInt) / 20
+              levelStep =    3600
             }
-          }else{
-            levelStep =    3600
           }
+
         }
         case "TrajSamplePointsCount" => {
           levelStep = 1000
         }
         case "TrajAvgSampleTime" => {
-          val filter = filters.get("AvgSampleTime")
-          if(filter != None){                   //if avgspeed filter exists
-            if(filter.get("relation") == "lt"){
-              levelStep =      filter.get("value").toInt / 20
+          if(filters != null){
+            val filter = filters.get("AvgSampleTime")
+            if(filter != None){                   //if avgspeed filter exists
+              if(filter.get("relation") == "lt"){
+                levelStep =      filter.get("value").toInt / 20
+              }else{
+                levelStep =     Math.abs(200 - filter.get("value").toInt) / 20
+              }
             }else{
-              levelStep =     Math.abs(200 - filter.get("value").toInt) / 20
+              levelStep =    10
             }
-          }else{
-            levelStep =    10
           }
+
         }
         case "GPSSampleSpeed" => {
           levelStep =    10

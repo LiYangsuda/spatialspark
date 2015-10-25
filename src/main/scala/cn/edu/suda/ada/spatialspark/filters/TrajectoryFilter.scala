@@ -5,7 +5,7 @@ import cn.edu.suda.ada.spatialspark.core.{Range, Trajectory}
 /**
  * Created by liyang on 15-9-4.
  */
-trait TrajectoryFilter extends Serializable{
+trait TrajectoryFilter{
   def doFilter(trajectory:Trajectory):Boolean
   override def toString: String = "TrajectoryFilter"
 }
@@ -38,7 +38,7 @@ object TrajectoryOTimeFilter extends TrajectoryFilter{
       case "equal" => t == otime
       case "ngt" => t <= otime
       case "nlt" => t >= otime
-      case _ => throw new IllegalArgumentException("filter relation must be one of: (1) gt (>) (2) lt (<) (3) equal (=) (4) ngt (<=) (5) nlt (>=)")
+      case _ => throw new IllegalArgumentException("relation: " +relation)
     } //If all this relation don't match, an MatcherError will be thrown.
     result
   }
@@ -70,7 +70,7 @@ object TrajectoryDTimeFilter extends TrajectoryFilter{
       case "equal" => t == dtime
       case "ngt" => t <= dtime
       case "nlt" => t >= dtime
-      case _ => throw new IllegalArgumentException("filter relation must be one of: (1) gt (>) (2) lt (<) (3) equal (=) (4) ngt (<=) (5) nlt (>=)")
+      case _ => throw new IllegalArgumentException(this+"relation: " +relation)
     } //If all this relation don't match, an MatcherError will be thrown.
     result
   }
@@ -80,9 +80,9 @@ object TrajectoryDTimeFilter extends TrajectoryFilter{
  * Filter on a single trajectory based on trajectory
  */
 
-object TrajectoryTravelTimeFilter extends TrajectoryFilter{
-  var traveltime: Long = 0
-  var relation: String = ""
+object TrajectoryTravelTimeFilter extends TrajectoryFilter with Serializable{
+  var traveltime: Long = 3600
+  var relation: String = "lt"
 
   /**
    * Set the parameters of OTime filter
@@ -102,7 +102,7 @@ object TrajectoryTravelTimeFilter extends TrajectoryFilter{
       case "equal" => ttime == traveltime
       case "ngt" => ttime <= traveltime
       case "nlt" => ttime >= traveltime
-      case _ => throw new IllegalArgumentException("filter relation must be one of: (1) gt (>) (2) lt (<) (3) equal (=) (4) ngt (<=) (5) nlt (>=)")
+      case _ => throw new IllegalArgumentException("relation: " +relation)
     } //If all this relation don't match, an MatcherError will be thrown.
     result
   }
@@ -112,7 +112,7 @@ object TrajectoryTravelTimeFilter extends TrajectoryFilter{
  * Filter on a single trajectory based on trajectory travel distance
  */
 //}
-object TrajectoryTravelDistanceFilter extends TrajectoryFilter{
+object TrajectoryTravelDistanceFilter extends TrajectoryFilter with Serializable{
   var travelDistance: Float = 0
   var relation: String = ""
 
@@ -134,8 +134,7 @@ object TrajectoryTravelDistanceFilter extends TrajectoryFilter{
       case "equal" => distance == travelDistance
       case "ngt" => distance <= travelDistance
       case "nlt" => distance >= travelDistance
-      case _ => throw new IllegalArgumentException("relation in" +this + "is"+relation+
-        "filter relation must be one of: (1) gt (>) (2) lt (<) (3) equal (=) (4) ngt (<=) (5) nlt (>=)")
+      case _ => throw new IllegalArgumentException(this+"relation: " +relation)
     } //If all this relation don't match, an MatcherError will be thrown.
     result
   }
@@ -145,7 +144,7 @@ object TrajectoryTravelDistanceFilter extends TrajectoryFilter{
  * Filter on a single trajectory based on trajectory's average travel speed
  */
 
-object TrajectoryAvgSpeedFilter extends TrajectoryFilter{
+object TrajectoryAvgSpeedFilter extends TrajectoryFilter with Serializable{
   var averageSpeed: Float = 0
   var relation: String = ""
 
@@ -168,8 +167,7 @@ object TrajectoryAvgSpeedFilter extends TrajectoryFilter{
       case "equal" => avgSpeed == averageSpeed
       case "ngt" => avgSpeed <= averageSpeed
       case "nlt" => avgSpeed >= averageSpeed
-      case _ => throw new IllegalArgumentException("relation in" +this + "is"+relation+
-        "filter relation must be one of: (1) gt (>) (2) lt (<) (3) equal (=) (4) ngt (<=) (5) nlt (>=)")
+      case _ => throw new IllegalArgumentException(this+"relation in" +this + "is"+relation)
     } //If all this relation don't match, an MatcherError will be thrown.
     result
   }
@@ -179,7 +177,7 @@ object TrajectoryAvgSpeedFilter extends TrajectoryFilter{
  * Filter on a single trajectory based on trajectory's average travel speed
  */
 
-object TrajectoryAvgSampleTimeFilter extends TrajectoryFilter{
+object TrajectoryAvgSampleTimeFilter extends TrajectoryFilter with Serializable{
   var averageSampleTime: Float = 0
   var relation: String = ""
 
@@ -208,7 +206,7 @@ object TrajectoryAvgSampleTimeFilter extends TrajectoryFilter{
       case "equal" => avgInterval == averageSampleTime
       case "ngt" => avgInterval <= averageSampleTime
       case "nlt" => avgInterval >= averageSampleTime
-      case _ => throw new IllegalArgumentException("filter relation must be one of: (1) gt (>) (2) lt (<) (3) equal (=) (4) ngt (<=) (5) nlt (>=)")
+      case _ => throw new IllegalArgumentException(this+"avgsampleTime: "+this.averageSampleTime+" relation: "+this.relation)
     } //If all this relation don't match, an MatcherError will be thrown.
     result
   }
@@ -218,7 +216,7 @@ object TrajectoryAvgSampleTimeFilter extends TrajectoryFilter{
  * Filter on a single trajectory based on range of the start point
  */
 
-object TrajectoryOPointFilter extends TrajectoryFilter{
+object TrajectoryOPointFilter extends TrajectoryFilter with Serializable{
   var range: Range = null
   def setParameters(range: Range): Unit ={
     this.range = range
@@ -232,7 +230,7 @@ object TrajectoryOPointFilter extends TrajectoryFilter{
 /**
  * Filter on a single trajectory based on range of the end point
  */
-object TrajectoryDPointFilter extends TrajectoryFilter {
+object TrajectoryDPointFilter extends TrajectoryFilter with Serializable{
   var range: Range = null
   def setParameters(range:Range): Unit ={
     this.range = range
@@ -248,7 +246,7 @@ object TrajectoryDPointFilter extends TrajectoryFilter {
 /**
  * Filter on a single trajectory based on whether the trajectory pass over a particular area
  */
-object TrajectoryPassRangeFilter extends TrajectoryFilter{
+object TrajectoryPassRangeFilter extends TrajectoryFilter with Serializable{
   var range: Range =null
   def setParameters(range: Range): Unit ={
     this.range = range

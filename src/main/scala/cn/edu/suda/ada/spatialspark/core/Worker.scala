@@ -5,7 +5,6 @@ import cn.edu.suda.ada.spatialspark.filters._
 import org.apache.spark.{SparkContext, Logging}
 import org.apache.spark.rdd.RDD
 
-import scala.collection.mutable.ArrayBuffer
 
 /**
  * Created by liyang on 15-9-22.
@@ -155,51 +154,43 @@ object Worker extends Logging {
     for(filter <- filtersParameters){
       if(filter._1 == "OTime"){
         TrajectoryOTimeFilter.setParameters(filter._2("value").toLong,filter._2("relation"))
-        logInfo("Applying OTime filter on rdd. OTime.value = "+filter._2("value")+" filter relation: "+filter._2("relation"))
         filters =  TrajectoryOTimeFilter :: filters
       }
       if(filter._1 == "DTime"){
         TrajectoryDTimeFilter.setParameters(filter._2("value").toLong,filter._2("relation"))
-        logInfo("Applying DTime filter on rdd")
+
         filters =   TrajectoryDTimeFilter :: filters
       }
       if(filter._1.equalsIgnoreCase("TravelTime")){
         TrajectoryTravelTimeFilter.setParameters(filter._2("value").toLong,filter._2("relation"))
-        logInfo("Applying TravelTime filter on rdd")
         filters =   TrajectoryTravelTimeFilter :: filters
       }
       if(filter._1.equalsIgnoreCase("TravelDistance")){
         TrajectoryTravelDistanceFilter.setParameters(filter._2("value").toFloat,filter._2("relation"))
-        logInfo("Applying TravelDistance filter on rdd")
         filters =   TrajectoryTravelDistanceFilter :: filters
       }
       if(filter._1.equalsIgnoreCase("AvgSpeed")){
         TrajectoryAvgSpeedFilter.setParameters(filter._2("value").toLong,filter._2("relation"))
-        logInfo("before apply filter:AvgSpeed:= "+filter._2("value")+filter._2("relation"))
+
         filters =   TrajectoryAvgSpeedFilter :: filters
       }
       if(filter._1.equalsIgnoreCase("AvgSampleTime")){
         TrajectoryAvgSampleTimeFilter.setParameters(filter._2("value").toLong,filter._2("relation"))
-        logInfo("Applying AvgSampleTime filter on rdd")
         filters =   TrajectoryAvgSampleTimeFilter :: filters
       }
       if(filter._1.equalsIgnoreCase("OPoint")){
         val range = new Range(filter._2("minLng").toDouble,filter._2("maxLat").toDouble,filter._2("maxLng").toDouble,filter._2("minLat").toDouble)
-        logInfo("Applying OPoint filter on rdd")
         TrajectoryOPointFilter.setParameters(range)
         filters =   TrajectoryOPointFilter :: filters
       }
       if(filter._1.equalsIgnoreCase("DPoint")){
         val range = new Range(filter._2("minLng").toDouble,filter._2("maxLat").toDouble,filter._2("maxLng").toDouble,filter._2("minLat").toDouble)
-        logInfo("Applying DPoint filter on rdd")
         TrajectoryDPointFilter.setParameters(range)
         filters =    TrajectoryDPointFilter :: filters
       }
       if(filter._1.equalsIgnoreCase("PassRange")){
-        logInfo("minLng:"+filter._2("minLng")+" maxLat:" +filter._2("maxLat")+" maxLng:"+filter._2("maxLng")+" minLat:"+filter._2("minLat"))
         val range = new Range(filter._2("minLng").toDouble,filter._2("maxLat").toDouble,filter._2("maxLng").toDouble,filter._2("minLat").toDouble)
 
-        logInfo("Applying PassRange filter:"+range.toString)
         TrajectoryPassRangeFilter.setParameters(range)
         filters =    TrajectoryPassRangeFilter :: filters
       }
@@ -214,7 +205,7 @@ object Worker extends Logging {
    * @todo NOTE: Here I want to use a broadcast variable to reduce the cost of constructing filter lists every time but failed.
    */
   def applyFilters(filtersParameters: Map[String,Map[String,String]]):RDD[Trajectory] = {
-    //  val filtersBroadcast = sc.broadcast(constructFilters(filtersParameters))
+      val filtersBroadcast = sc.broadcast(constructFilters(filtersParameters))
 
     // val filtersbc = sc.broadcast(constructFilters(filtersParameters))
     if (originalRDD == null) throw new Exception("Error: trajectory data is null in Worker.applyFilters()")
@@ -223,10 +214,10 @@ object Worker extends Logging {
 
     rdd = rdd.filter(tra => {
       var flag = true
-      val filters = Worker.constructFilters(filtersParameters)
-      //val filters = filtersBroadcast.value
+      //val filters = Worker.constructFilters(filtersParameters)
+      val filters = filtersBroadcast.value
+      filters.foreach(println _)
       for(filter <- filters if flag) {
-        logInfo(filter.toString)
         flag = flag && filter.doFilter(tra)
       }
       flag

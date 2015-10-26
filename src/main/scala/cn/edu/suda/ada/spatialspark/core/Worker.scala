@@ -153,30 +153,30 @@ object Worker extends Logging {
     var filters: List[TrajectoryFilter] = Nil
     for(filter <- filtersParameters){
       if(filter._1 == "OTime"){
-        TrajectoryOTimeFilter.setParameters(filter._2("value").toLong,filter._2("relation"))
-        filters =  TrajectoryOTimeFilter :: filters
+        val item = new TrajectoryOTimeFilter(filter._2("value").toLong,filter._2("relation"))
+        filters =  item :: filters
       }
       if(filter._1 == "DTime"){
-        TrajectoryDTimeFilter.setParameters(filter._2("value").toLong,filter._2("relation"))
+        val item = new TrajectoryDTimeFilter(filter._2("value").toLong,filter._2("relation"))
 
-        filters =   TrajectoryDTimeFilter :: filters
+        filters =   item :: filters
       }
       if(filter._1.equalsIgnoreCase("TravelTime")){
-        TrajectoryTravelTimeFilter.setParameters(filter._2("value").toLong,filter._2("relation"))
-        filters =   TrajectoryTravelTimeFilter :: filters
+        val item = new TrajectoryTravelTimeFilter(filter._2("value").toLong,filter._2("relation"))
+        filters =   item :: filters
       }
       if(filter._1.equalsIgnoreCase("TravelDistance")){
-        TrajectoryTravelDistanceFilter.setParameters(filter._2("value").toFloat,filter._2("relation"))
-        filters =   TrajectoryTravelDistanceFilter :: filters
+        val item  = new TrajectoryTravelDistanceFilter(filter._2("value").toFloat,filter._2("relation"))
+        filters =   item :: filters
       }
       if(filter._1.equalsIgnoreCase("AvgSpeed")){
-        TrajectoryAvgSpeedFilter.setParameters(filter._2("value").toLong,filter._2("relation"))
+        val item = new TrajectoryAvgSpeedFilter(filter._2("value").toLong,filter._2("relation"))
 
-        filters =   TrajectoryAvgSpeedFilter :: filters
+        filters =   item :: filters
       }
       if(filter._1.equalsIgnoreCase("AvgSampleTime")){
-        TrajectoryAvgSampleTimeFilter.setParameters(filter._2("value").toLong,filter._2("relation"))
-        filters =   TrajectoryAvgSampleTimeFilter :: filters
+        val item = new  TrajectoryAvgSampleTimeFilter(filter._2("value").toLong,filter._2("relation"))
+        filters =   item :: filters
       }
       if(filter._1.equalsIgnoreCase("OPoint")){
         val range = new Range(filter._2("minLng").toDouble,filter._2("maxLat").toDouble,filter._2("maxLng").toDouble,filter._2("minLat").toDouble)
@@ -221,7 +221,7 @@ object Worker extends Logging {
         flag = flag && filter.doFilter(tra)
       }
       flag
-    })
+    }).repartition((rdd.count()/60000).toInt).persist()
     logInfo(rdd.partitions.length.toString)
     rdd
   }

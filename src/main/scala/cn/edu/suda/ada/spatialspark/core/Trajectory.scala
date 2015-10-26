@@ -29,6 +29,7 @@ class Trajectory(val trajectoryID:String,val carID:String,var GPSPoints:List[GPS
 
   /**
    * @return travel distance of a trajectory
+   * @note 只计算坐标距离不是长度，需要进一步完善
    */
   def getTravelDistance: Float = {
     if (travelDistance != -1)

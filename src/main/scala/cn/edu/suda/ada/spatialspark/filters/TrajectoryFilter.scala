@@ -10,15 +10,11 @@ trait TrajectoryFilter{
   override def toString: String = "TrajectoryFilter"
 }
 
-
 /**
  * Filter on a single trajectory based on OTime
  */
 
-object TrajectoryOTimeFilter extends TrajectoryFilter{
-  var otime: Long = 0
-  var relation: String = ""
-
+class TrajectoryOTimeFilter(var otime: Long,var relation: String) extends TrajectoryFilter with Serializable{
   /**
    * Set the parameters of OTime filter
    * @param time  Start time of the trajectory
@@ -48,9 +44,7 @@ object TrajectoryOTimeFilter extends TrajectoryFilter{
  * Filter on a single trajectory based on DTime
  */
 
-object TrajectoryDTimeFilter extends TrajectoryFilter{
-  var dtime: Long = 0
-  var relation: String = ""
+class TrajectoryDTimeFilter(var dtime: Long,var relation: String) extends TrajectoryFilter with Serializable{
 
   /**
    * Set the parameters of OTime filter
@@ -63,14 +57,15 @@ object TrajectoryDTimeFilter extends TrajectoryFilter{
   }
   def doFilter(trajectory: Trajectory): Boolean = {
     val t = trajectory.getEndTime
-
-    val result: Boolean = relation match {
-      case "gt" => t > dtime
-      case "lt" => t < dtime
-      case "equal" => t == dtime
-      case "ngt" => t <= dtime
-      case "nlt" => t >= dtime
-      case _ => throw new IllegalArgumentException(this+"relation: " +relation)
+    val dtime_ = this.dtime
+    val relation_ = this.relation
+    val result: Boolean = relation_ match {
+      case "gt" => t > dtime_
+      case "lt" => t < dtime_
+      case "equal" => t == dtime_
+      case "ngt" => t <= dtime_
+      case "nlt" => t >= dtime_
+      case _ => throw new IllegalArgumentException(this+"relation: " +relation_)
     } //If all this relation don't match, an MatcherError will be thrown.
     result
   }
@@ -80,10 +75,7 @@ object TrajectoryDTimeFilter extends TrajectoryFilter{
  * Filter on a single trajectory based on trajectory
  */
 
-object TrajectoryTravelTimeFilter extends TrajectoryFilter with Serializable{
-  var traveltime: Long = 3600
-  var relation: String = "lt"
-
+class TrajectoryTravelTimeFilter(var traveltime: Long,var relation: String) extends TrajectoryFilter with Serializable{
   /**
    * Set the parameters of OTime filter
    * @param time  Start time of the trajectory
@@ -95,13 +87,14 @@ object TrajectoryTravelTimeFilter extends TrajectoryFilter with Serializable{
   }
   def doFilter(trajectory: Trajectory): Boolean = {
     val ttime = trajectory.getDuration
-
-    val result: Boolean = relation match {
-      case "gt" => ttime > traveltime
-      case "lt" => ttime < traveltime
-      case "equal" => ttime == traveltime
-      case "ngt" => ttime <= traveltime
-      case "nlt" => ttime >= traveltime
+    val traveltime_ = this.traveltime
+    val relation_ = this.relation
+    val result: Boolean = relation_ match {
+      case "gt" => ttime > traveltime_
+      case "lt" => ttime < traveltime_
+      case "equal" => ttime == traveltime_
+      case "ngt" => ttime <= traveltime_
+      case "nlt" => ttime >= traveltime_
       case _ => throw new IllegalArgumentException("relation: " +relation)
     } //If all this relation don't match, an MatcherError will be thrown.
     result
@@ -112,9 +105,7 @@ object TrajectoryTravelTimeFilter extends TrajectoryFilter with Serializable{
  * Filter on a single trajectory based on trajectory travel distance
  */
 //}
-object TrajectoryTravelDistanceFilter extends TrajectoryFilter with Serializable{
-  var travelDistance: Float = 0
-  var relation: String = ""
+class TrajectoryTravelDistanceFilter(var travelDistance: Float,var relation: String) extends TrajectoryFilter with Serializable{
 
   /**
    * Set the parameters of OTime filter
@@ -127,14 +118,15 @@ object TrajectoryTravelDistanceFilter extends TrajectoryFilter with Serializable
   }
   def doFilter(trajectory: Trajectory): Boolean = {
     val distance = trajectory.getTravelDistance
-
-    val result: Boolean = relation match {
-      case "gt" => distance > travelDistance
-      case "lt" => distance < travelDistance
-      case "equal" => distance == travelDistance
-      case "ngt" => distance <= travelDistance
-      case "nlt" => distance >= travelDistance
-      case _ => throw new IllegalArgumentException(this+"relation: " +relation)
+    val travelDistince_ = this.travelDistance
+    val relation_ = this.relation
+    val result: Boolean = relation_ match {
+      case "gt" => distance > travelDistince_
+      case "lt" => distance < travelDistince_
+      case "equal" => distance == travelDistince_
+      case "ngt" => distance <= travelDistince_
+      case "nlt" => distance >= travelDistince_
+      case _ => throw new IllegalArgumentException(this+"relation: " +relation_)
     } //If all this relation don't match, an MatcherError will be thrown.
     result
   }
@@ -144,9 +136,8 @@ object TrajectoryTravelDistanceFilter extends TrajectoryFilter with Serializable
  * Filter on a single trajectory based on trajectory's average travel speed
  */
 
-object TrajectoryAvgSpeedFilter extends TrajectoryFilter with Serializable{
-  var averageSpeed: Float = 0
-  var relation: String = ""
+class TrajectoryAvgSpeedFilter(var averageSpeed: Float,var relation: String) extends TrajectoryFilter with Serializable{
+
 
   /**
    * Set the parameters of OTime filter
@@ -160,14 +151,16 @@ object TrajectoryAvgSpeedFilter extends TrajectoryFilter with Serializable{
   def doFilter(trajectory: Trajectory): Boolean = {
 
     val avgSpeed = trajectory.getAverageSpeed
+    val averageSpeed_ = this.averageSpeed
+    val relation_ = this.relation
 //Use pattern matching to simplify the code above
-    val result: Boolean = relation match {
-      case "gt" => avgSpeed > averageSpeed
-      case "lt" => avgSpeed < averageSpeed
-      case "equal" => avgSpeed == averageSpeed
-      case "ngt" => avgSpeed <= averageSpeed
-      case "nlt" => avgSpeed >= averageSpeed
-      case _ => throw new IllegalArgumentException(this+"relation in" +this + "is"+relation)
+    val result: Boolean = relation_ match {
+      case "gt" => avgSpeed > averageSpeed_
+      case "lt" => avgSpeed < averageSpeed_
+      case "equal" => avgSpeed == averageSpeed_
+      case "ngt" => avgSpeed <= averageSpeed_
+      case "nlt" => avgSpeed >= averageSpeed_
+      case _ => throw new IllegalArgumentException(this+"relation in" +this + "is"+relation_)
     } //If all this relation don't match, an MatcherError will be thrown.
     result
   }
@@ -177,9 +170,7 @@ object TrajectoryAvgSpeedFilter extends TrajectoryFilter with Serializable{
  * Filter on a single trajectory based on trajectory's average travel speed
  */
 
-object TrajectoryAvgSampleTimeFilter extends TrajectoryFilter with Serializable{
-  var averageSampleTime: Float = 0
-  var relation: String = ""
+class TrajectoryAvgSampleTimeFilter( var averageSampleTime: Float,var relation: String) extends TrajectoryFilter with Serializable{
 
   /**
    * Set the parameters of OTime filter
@@ -192,20 +183,14 @@ object TrajectoryAvgSampleTimeFilter extends TrajectoryFilter with Serializable{
   }
   def doFilter(trajectory: Trajectory): Boolean = {
     val avgInterval = trajectory.getAverageSampleInterval
-//
-//    var result: Boolean = true
-//    if(relation == "gt") {result = if(avgInterval > averageSampleTime) true else false}
-//    if(relation == "lt") {result = if(avgInterval < averageSampleTime) true else false}
-//    if(relation == "equal") {result = if(avgInterval == averageSampleTime) true else false}
-//    if(relation == "ngt") {result = if(avgInterval <= averageSampleTime) true else false}
-//    if(relation == "nlt") {result = if(avgInterval >= averageSampleTime) true else false}
-//    result
-    val result: Boolean = relation match {
-      case "gt" => avgInterval > averageSampleTime
-      case "lt" => avgInterval < averageSampleTime
-      case "equal" => avgInterval == averageSampleTime
-      case "ngt" => avgInterval <= averageSampleTime
-      case "nlt" => avgInterval >= averageSampleTime
+    val averageSampleTime_ = this.averageSampleTime
+    val relation_ = this.relation
+    val result: Boolean = relation_ match {
+      case "gt" => avgInterval > averageSampleTime_
+      case "lt" => avgInterval < averageSampleTime_
+      case "equal" => avgInterval == averageSampleTime_
+      case "ngt" => avgInterval <= averageSampleTime_
+      case "nlt" => avgInterval >= averageSampleTime_
       case _ => throw new IllegalArgumentException(this+"avgsampleTime: "+this.averageSampleTime+" relation: "+this.relation)
     } //If all this relation don't match, an MatcherError will be thrown.
     result

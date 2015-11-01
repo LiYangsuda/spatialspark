@@ -14,7 +14,7 @@ class WorkerTest extends FlatSpec {
   Worker.setSparkContext(sc)
   var rdd: RDD[Trajectory] = null
   val inputPath = "hdfs://192.168.131.192:9000/data/xaa"
-  rdd = Worker.loadTrajectoryFromDataSource(inputPath)
+
 
   val feature = Map("TrajAvgSpeed"->10)
   //TrajectoryAverageSpeedClassifier.setLevelStep(10)

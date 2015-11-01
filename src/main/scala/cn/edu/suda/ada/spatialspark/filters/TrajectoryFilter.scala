@@ -14,7 +14,7 @@ trait TrajectoryFilter{
  * Filter on a single trajectory based on OTime
  */
 
-class TrajectoryOTimeFilter(var otime: Long,var relation: String) extends TrajectoryFilter with Serializable{
+private class TrajectoryOTimeFilter(var otime: Long,var relation: String) extends TrajectoryFilter with Serializable{
   /**
    * Set the parameters of OTime filter
    * @param time  Start time of the trajectory
@@ -44,7 +44,7 @@ class TrajectoryOTimeFilter(var otime: Long,var relation: String) extends Trajec
  * Filter on a single trajectory based on DTime
  */
 
-class TrajectoryDTimeFilter(var dtime: Long,var relation: String) extends TrajectoryFilter with Serializable{
+ private class TrajectoryDTimeFilter(var dtime: Long,var relation: String) extends TrajectoryFilter with Serializable{
 
   /**
    * Set the parameters of OTime filter
@@ -75,7 +75,7 @@ class TrajectoryDTimeFilter(var dtime: Long,var relation: String) extends Trajec
  * Filter on a single trajectory based on trajectory
  */
 
-class TrajectoryTravelTimeFilter(var traveltime: Long,var relation: String) extends TrajectoryFilter with Serializable{
+private class TrajectoryTravelTimeFilter(var traveltime: Long,var relation: String) extends TrajectoryFilter with Serializable{
   /**
    * Set the parameters of OTime filter
    * @param time  Start time of the trajectory
@@ -105,7 +105,7 @@ class TrajectoryTravelTimeFilter(var traveltime: Long,var relation: String) exte
  * Filter on a single trajectory based on trajectory travel distance
  */
 //}
-class TrajectoryTravelDistanceFilter(var travelDistance: Float,var relation: String) extends TrajectoryFilter with Serializable{
+private class TrajectoryTravelDistanceFilter(var travelDistance: Float,var relation: String) extends TrajectoryFilter with Serializable{
 
   /**
    * Set the parameters of OTime filter
@@ -136,7 +136,7 @@ class TrajectoryTravelDistanceFilter(var travelDistance: Float,var relation: Str
  * Filter on a single trajectory based on trajectory's average travel speed
  */
 
-class TrajectoryAvgSpeedFilter(var averageSpeed: Float,var relation: String) extends TrajectoryFilter with Serializable{
+private class TrajectoryAvgSpeedFilter(var averageSpeed: Float,var relation: String) extends TrajectoryFilter with Serializable{
 
 
   /**
@@ -170,7 +170,7 @@ class TrajectoryAvgSpeedFilter(var averageSpeed: Float,var relation: String) ext
  * Filter on a single trajectory based on trajectory's average travel speed
  */
 
-class TrajectoryAvgSampleTimeFilter( var averageSampleTime: Float,var relation: String) extends TrajectoryFilter with Serializable{
+private class TrajectoryAvgSampleTimeFilter( var averageSampleTime: Float,var relation: String) extends TrajectoryFilter with Serializable{
 
   /**
    * Set the parameters of OTime filter
@@ -201,38 +201,39 @@ class TrajectoryAvgSampleTimeFilter( var averageSampleTime: Float,var relation: 
  * Filter on a single trajectory based on range of the start point
  */
 
-object TrajectoryOPointFilter extends TrajectoryFilter with Serializable{
-  var range: Range = null
+private class TrajectoryOPointFilter(var range: Range) extends TrajectoryFilter with Serializable{
+
   def setParameters(range: Range): Unit ={
     this.range = range
   }
   def doFilter(trajectory:Trajectory):Boolean = {
+    val range_ = this.range
     val p = trajectory.getStartPoint
-    range.contains(p.getPoint())
+    range_.contains(p.getPoint())
   }
   override def toString = "Object TrajectoryOPointFilter: range = "+range.toString
 }
 /**
  * Filter on a single trajectory based on range of the end point
  */
-object TrajectoryDPointFilter extends TrajectoryFilter with Serializable{
-  var range: Range = null
+class TrajectoryDPointFilter(var range: Range) extends TrajectoryFilter with Serializable{
+
   def setParameters(range:Range): Unit ={
     this.range = range
   }
 
   override def doFilter(trajectory: Trajectory): Boolean = {
     val p = trajectory.getEndPoint
-
-    range.contains(p.getPoint())
+    val range_ = this.range
+    range_.contains(p.getPoint())
   }
   override def toString = "TrajectoryDPointFilter: range = "+range.toString
 }
 /**
  * Filter on a single trajectory based on whether the trajectory pass over a particular area
  */
-object TrajectoryPassRangeFilter extends TrajectoryFilter with Serializable{
-  var range: Range =null
+ private class TrajectoryPassRangeFilter(var range: Range) extends TrajectoryFilter with Serializable{
+
   def setParameters(range: Range): Unit ={
     this.range = range
   }
@@ -244,9 +245,80 @@ object TrajectoryPassRangeFilter extends TrajectoryFilter with Serializable{
    * @return Return true if the trajectory passes by the given area, otherwise false.
    */
   override def doFilter(trajectory: Trajectory): Boolean = {
-    trajectory.GPSPoints.exists(point => range.contains(point.getPoint()))
+    val range_ = this.range
+    trajectory.GPSPoints.exists(point => range_.contains(point.getPoint()))
   }
 
   override def toString = "Object TrajectoryPassRangeFilter: range = "+range.toString
 }
 
+object TrajectoryFilter{
+  def apply(filtersParameters : Map[String,Map[String,String]]): List[TrajectoryFilter] ={
+    var filters: List[TrajectoryFilter] = Nil
+    for(filter <- filtersParameters){
+      if(filter._1 == "OTime"){
+        val item = new TrajectoryOTimeFilter(filter._2("value").toLong,filter._2("relation"))
+        filters =  item :: filters
+      }
+      if(filter._1 == "DTime"){
+        val item = new TrajectoryDTimeFilter(filter._2("value").toLong,filter._2("relation"))
+
+        filters =   item :: filters
+      }
+      if(filter._1.equalsIgnoreCase("TravelTime")){
+        val item = new TrajectoryTravelTimeFilter(filter._2("value").toLong,filter._2("relation"))
+        filters =   item :: filters
+      }
+      if(filter._1.equalsIgnoreCase("TravelDistance")){
+        val item  = new TrajectoryTravelDistanceFilter(filter._2("value").toFloat,filter._2("relation"))
+        filters =   item :: filters
+      }
+      if(filter._1.equalsIgnoreCase("AvgSpeed")){
+        val item = new TrajectoryAvgSpeedFilter(filter._2("value").toLong,filter._2("relation"))
+
+        filters =   item :: filters
+      }
+      if(filter._1.equalsIgnoreCase("AvgSampleTime")){
+        val item = new  TrajectoryAvgSampleTimeFilter(filter._2("value").toLong,filter._2("relation"))
+        filters =   item :: filters
+      }
+      if(filter._1.equalsIgnoreCase("OPoint")){
+        val range = new Range(filter._2("minLng").toDouble,filter._2("maxLat").toDouble,filter._2("maxLng").toDouble,filter._2("minLat").toDouble)
+        val item = new  TrajectoryOPointFilter(range)
+        filters =   item :: filters
+      }
+      if(filter._1.equalsIgnoreCase("DPoint")){
+        val range = new Range(filter._2("minLng").toDouble,filter._2("maxLat").toDouble,filter._2("maxLng").toDouble,filter._2("minLat").toDouble)
+        val item = new  TrajectoryDPointFilter(range)
+        filters =    item :: filters
+      }
+      if(filter._1.equalsIgnoreCase("PassRange")){
+        val range = new Range(filter._2("minLng").toDouble,filter._2("maxLat").toDouble,filter._2("maxLng").toDouble,filter._2("minLat").toDouble)
+        val item = new TrajectoryPassRangeFilter(range)
+        filters =    item :: filters
+      }
+    }
+    filters
+  }
+  def apply(filterName: String,filterValue: String,filterRelation: String): TrajectoryFilter = {
+
+    val trajectoryFilter: TrajectoryFilter = filterName match {
+      case "OTime" => new TrajectoryOTimeFilter(filterValue.toLong, filterRelation)
+      case "DTime" => new TrajectoryDTimeFilter(filterValue.toLong, filterRelation)
+      case "TravelTime" => new TrajectoryTravelTimeFilter(filterValue.toLong, filterRelation)
+      case "TravelDistance" => new TrajectoryTravelDistanceFilter(filterValue.toFloat, filterRelation)
+      case "AvgSpeed" => new TrajectoryAvgSpeedFilter(filterValue.toFloat, filterRelation)
+      case "AvgSampleSpeed" => new TrajectoryAvgSampleTimeFilter(filterValue.toLong, filterRelation)
+    }
+    trajectoryFilter
+  }
+   def apply(filterName: String,minLng: Double,maxLat:Double,maxLng:Double,minLat:Double): TrajectoryFilter = {
+     val range = Range(minLng,maxLat,maxLng,minLat)
+    val trajectoryFilter: TrajectoryFilter = filterName match {
+      case "OPoint" => new TrajectoryOPointFilter(range)
+      case "DPoint" => new TrajectoryDPointFilter(range)
+      case "PassRange" => new TrajectoryPassRangeFilter(range)
+    }
+     trajectoryFilter
+   }
+}

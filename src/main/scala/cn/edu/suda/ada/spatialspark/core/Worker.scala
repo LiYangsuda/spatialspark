@@ -2,6 +2,7 @@ package cn.edu.suda.ada.spatialspark.core
 
 import cn.edu.suda.ada.spatialspark.features._
 import cn.edu.suda.ada.spatialspark.filters._
+import org.apache.spark.storage.StorageLevel
 import org.apache.spark.{SparkContext, Logging}
 import org.apache.spark.rdd.RDD
 
@@ -26,22 +27,23 @@ object Worker extends Logging {
     this.sc = sc
   }
 
-  /**
-   * Load trajectories from data sources
-   * @param path Hadoop input path. start with "hdfs://"
-   * @return Trajectory RDD of from the file
-   */
-  def loadTrajectoryFromDataSource(path: String): RDD[Trajectory] = {
-    if (sc == null) throw new Exception("Sparksc haven't been initialized in the worker")
-    else {
-      val lines = sc.textFile(path)
-      originalRDD = lines.map(line => HDFSTrajectoryLoader.mapLine2Trajectory(line)).persist()
-      val trajectoryCount = originalRDD.count()
-      logInfo("There are" + trajectoryCount + "trajectories in the sampling data")
-
-      originalRDD
-    }
-  }
+//  /**
+//   * Load trajectories from data sources
+//   * @param path Hadoop input path. start with "hdfs://"
+//   * @return Trajectory RDD of from the file
+//   */
+//  def loadTrajectory(path: String): RDD[Trajectory] = {
+//    if (sc == null) throw new Exception("Sparksc haven't been initialized in the worker")
+//    else {
+//      val lines = sc.textFile(path)
+//      originalRDD = lines.map(line => HDFSTrajectoryLoader.mapLine2Trajectory(line)).persist()
+//      val trajectoryCount = originalRDD.count()
+//      logInfo("There are" + trajectoryCount + "trajectories in the sampling data")
+//
+//      originalRDD
+//    }
+//  }
+ // def loadTrajectory(path:String):RDD[Trajectory]
 
   /**
    * Get the feature distribution for the given feature
@@ -52,11 +54,11 @@ object Worker extends Logging {
    */
   def getTrajFeatures(feature: Trajectory => Int): Array[(Int, Int)] = {
 
-    val MapRDD = rdd.map(trajectory => (feature(trajectory),1)).reduceByKey(_ + _, 2).sortByKey(true).collect()
+    val MapRDD = rdd.map(trajectory => (feature(trajectory),1)).reduceByKey(_ + _, 4).sortByKey(true).collect()
     MapRDD
   }
   def getGPSFeatures(feature: Trajectory => Seq[(Int,Int)]):Array[(Int,Int)] = {
-    val mapRdd = rdd.flatMap(trajectory => feature(trajectory)).map(t => (t._2,t._1)).reduceByKey(_ + _,2).sortByKey(true).collect()
+    val mapRdd = rdd.flatMap(trajectory => feature(trajectory)).map(t => (t._2,t._1)).reduceByKey(_ + _,4).sortByKey(true).collect()
     mapRdd
   }
   /**
@@ -77,31 +79,21 @@ object Worker extends Logging {
         featureName match {
 
           case "TrajAvgSpeed" => {
-            //TrajectoryAverageSpeedClassifier.setLevelStep(levelStep)
             getTrajFeatures((tra: Trajectory) => TrajectoryAverageSpeedClassifier.getLevel(tra,levelStep))
           }
           case "TrajTravelDistance" => {
-            // TrajectoryTravelDistanceClassifier.setLevelStep(levelStep)
-            //  getTrajFeatures(TrajectoryTravelDistanceClassifier.getLevel)
             getTrajFeatures((tra: Trajectory) => TrajectoryTravelDistanceClassifier.getLevel(tra,levelStep))
           }
           case "TrajTravelTime" => {
-            //            TrajectoryTravelTimeClassifier.setLevelStep(levelStep)
-            //            getTrajFeatures(TrajectoryTravelTimeClassifier.getLevel)
             getTrajFeatures((tra: Trajectory) => TrajectoryTravelTimeClassifier.getLevel(tra,levelStep))
           }
           case "TrajSamplePointsCount" => {
-            //            TrajectorySimplePointsCountClassifier.setLevelStep(levelStep)
-            //            getTrajFeatures(TrajectorySimplePointsCountClassifier.getLevel)
             getTrajFeatures((tra: Trajectory) => TrajectorySimplePointsCountClassifier.getLevel(tra,levelStep))
           }
           case "TrajAvgSampleTime" => {
-            //            TrajectoryAvgSimpleTimeClassifier.setLevelStep(levelStep)
-            //            getTrajFeatures(TrajectoryAvgSimpleTimeClassifier.getLevel)
             getTrajFeatures((tra: Trajectory) => TrajectoryAvgSimpleTimeClassifier.getLevel(tra,levelStep))
           }
           case "GPSSampleSpeed" => {
-           // GPSSamplePointSpeedClassifier.setLevelStep(levelStep)
             getGPSFeatures((tra: Trajectory) => GPSSamplePointSpeedClassifier.getDistribution(tra,levelStep))
           }
         }
@@ -151,50 +143,7 @@ object Worker extends Logging {
    */
   private  def constructFilters(filtersParameters: Map[String,Map[String,String]]):List[TrajectoryFilter] = {
     var filters: List[TrajectoryFilter] = Nil
-    for(filter <- filtersParameters){
-      if(filter._1 == "OTime"){
-        val item = new TrajectoryOTimeFilter(filter._2("value").toLong,filter._2("relation"))
-        filters =  item :: filters
-      }
-      if(filter._1 == "DTime"){
-        val item = new TrajectoryDTimeFilter(filter._2("value").toLong,filter._2("relation"))
-
-        filters =   item :: filters
-      }
-      if(filter._1.equalsIgnoreCase("TravelTime")){
-        val item = new TrajectoryTravelTimeFilter(filter._2("value").toLong,filter._2("relation"))
-        filters =   item :: filters
-      }
-      if(filter._1.equalsIgnoreCase("TravelDistance")){
-        val item  = new TrajectoryTravelDistanceFilter(filter._2("value").toFloat,filter._2("relation"))
-        filters =   item :: filters
-      }
-      if(filter._1.equalsIgnoreCase("AvgSpeed")){
-        val item = new TrajectoryAvgSpeedFilter(filter._2("value").toLong,filter._2("relation"))
-
-        filters =   item :: filters
-      }
-      if(filter._1.equalsIgnoreCase("AvgSampleTime")){
-        val item = new  TrajectoryAvgSampleTimeFilter(filter._2("value").toLong,filter._2("relation"))
-        filters =   item :: filters
-      }
-      if(filter._1.equalsIgnoreCase("OPoint")){
-        val range = new Range(filter._2("minLng").toDouble,filter._2("maxLat").toDouble,filter._2("maxLng").toDouble,filter._2("minLat").toDouble)
-        TrajectoryOPointFilter.setParameters(range)
-        filters =   TrajectoryOPointFilter :: filters
-      }
-      if(filter._1.equalsIgnoreCase("DPoint")){
-        val range = new Range(filter._2("minLng").toDouble,filter._2("maxLat").toDouble,filter._2("maxLng").toDouble,filter._2("minLat").toDouble)
-        TrajectoryDPointFilter.setParameters(range)
-        filters =    TrajectoryDPointFilter :: filters
-      }
-      if(filter._1.equalsIgnoreCase("PassRange")){
-        val range = new Range(filter._2("minLng").toDouble,filter._2("maxLat").toDouble,filter._2("maxLng").toDouble,filter._2("minLat").toDouble)
-
-        TrajectoryPassRangeFilter.setParameters(range)
-        filters =    TrajectoryPassRangeFilter :: filters
-      }
-    }
+    filters = TrajectoryFilter(filtersParameters)
     filters
   }
 
@@ -205,9 +154,8 @@ object Worker extends Logging {
    * @todo NOTE: Here I want to use a broadcast variable to reduce the cost of constructing filter lists every time but failed.
    */
   def applyFilters(filtersParameters: Map[String,Map[String,String]]):RDD[Trajectory] = {
-      val filtersBroadcast = sc.broadcast(constructFilters(filtersParameters))
+    val filtersBroadcast = sc.broadcast(constructFilters(filtersParameters))
 
-    // val filtersbc = sc.broadcast(constructFilters(filtersParameters))
     if (originalRDD == null) throw new Exception("Error: trajectory data is null in Worker.applyFilters()")
     rdd = originalRDD
     logInfo("Applying filters on trajectory rdd")
@@ -216,12 +164,11 @@ object Worker extends Logging {
       var flag = true
       //val filters = Worker.constructFilters(filtersParameters)
       val filters = filtersBroadcast.value
-      filters.foreach(println _)
       for(filter <- filters if flag) {
         flag = flag && filter.doFilter(tra)
       }
       flag
-    }).repartition((rdd.count()/60000).toInt).persist()
+    }).persist(StorageLevel.MEMORY_ONLY)
     logInfo(rdd.partitions.length.toString)
     rdd
   }

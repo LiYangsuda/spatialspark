@@ -33,7 +33,7 @@ class Range(val lngmin:Double,val latmax:Double,val lngmax:Double,val latmin:Dou
 }
 object Range{
   /**
-   * Initialize a Range object from String
+   * Initialize a Range object from String that consist of four coordinate, separated by comma.
    * @param range A String contains four parameters separated by comma
    */
   def apply(range:String): Range ={
@@ -43,7 +43,9 @@ object Range{
     } else throw new Exception("arguments to instantiate object of Range is illegal")
     res
   }
-
+  def apply(lngmin:Double,latmax:Double,lngmax:Double,latmin:Double): Range = {
+    new Range(lngmin,latmax,lngmax,latmin)
+  }
   /**
    * @todo
    * Validate whehter the string is valid to be transformed into a Range object. Note the result is set to be always true for testing

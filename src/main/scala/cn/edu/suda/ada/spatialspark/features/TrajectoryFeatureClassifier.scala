@@ -25,7 +25,6 @@ object TrajectoryAverageSpeedClassifier extends TrajectoryNumericalClassifier wi
 
   def getLevel(trajectory:Trajectory,levelStep: Int):Int = {
     val avgSpeed = trajectory.getAverageSpeed
-    logInfo("levelStep:"+levelStep)
     val level =  (avgSpeed / levelStep).toInt * levelStep
     level
   }

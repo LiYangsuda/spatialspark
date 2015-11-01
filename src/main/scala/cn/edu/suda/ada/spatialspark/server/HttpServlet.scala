@@ -11,17 +11,6 @@ import org.apache.spark.Logging
 class JettyHttpServlet extends HttpServlet{
   private final  val serialVersionUID = 1L
 
-//  override def doPost(req:HttpServletRequest,resp:HttpServletResponse){
-//    val filterParameters = getFilterMap(req)
-//    val featureNames = getFeatures(req)
-//    val featureParameters = getProperLevelStep(featureNames,filterParameters)
-//
-//    if(featureParameters != null){
-//      for(feature <- featureParameters){
-//        println(feature._1 +" -> "+feature._2)
-//      }
-//    }
-//  }
   /**
    * The method doPost do nothing but write hello world to the client
    * @param req
@@ -174,7 +163,7 @@ class JettyHttpServlet extends HttpServlet{
                 levelStep =   Math.abs(100 - filter.get("value").toInt) / 20
               }
             }else {
-              levelStep = 10 //default levelstep
+              levelStep = 5 //default levelstep
             }
           }
 
@@ -205,13 +194,13 @@ class JettyHttpServlet extends HttpServlet{
                 levelStep =    Math.abs(36000 - filter.get("value").toInt) / 20
               }
             }else{
-              levelStep =    3600
+              levelStep =   1200
             }
           }
 
         }
         case "TrajSamplePointsCount" => {
-          levelStep = 1000
+          levelStep = 500
         }
         case "TrajAvgSampleTime" => {
           if(filters != null){
@@ -223,13 +212,13 @@ class JettyHttpServlet extends HttpServlet{
                 levelStep =     Math.abs(200 - filter.get("value").toInt) / 20
               }
             }else{
-              levelStep =    10
+              levelStep =    50
             }
           }
 
         }
         case "GPSSampleSpeed" => {
-          levelStep =    10
+          levelStep =    5
         }
         case _ => levelStep =   1000
       }

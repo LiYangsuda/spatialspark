@@ -10,7 +10,7 @@ class HDFSTrajectoryLoaderTest extends FunSuite {
 
   test("testLoadTrajectoryFromDataSource") {
     val sc = new SparkContext(new SparkConf().setAppName("TestLoader").setMaster("local"))
-    val trajectoryLoader = new HDFSTrajectoryLoader(sc)
+    val trajectoryLoader = TrajectoryLoader(sc)
     val inputPath = "hdfs://192.168.131.192:9000/data/xaa"
     val rdd = trajectoryLoader.loadTrajectoryFromDataSource(inputPath)
     println(rdd.count())

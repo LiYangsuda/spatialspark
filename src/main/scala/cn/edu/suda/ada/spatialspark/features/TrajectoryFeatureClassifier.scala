@@ -1,7 +1,6 @@
 package cn.edu.suda.ada.spatialspark.features
 
 import cn.edu.suda.ada.spatialspark.core.Trajectory
-//import cn.edu.suda.ada.spatialspark.features.TrajectoryTravelTimeClassifier._
 import org.apache.spark.Logging
 
 /**

@@ -95,5 +95,5 @@ class Trajectory(val trajectoryID:String,val carID:String,var GPSPoints:List[GPS
     }
   }
 
-  override def toString = "Trajectory: Id("+trajectoryID+") carId("+carID+")"
+  override def toString = "Trajectory: Id ("+trajectoryID+") carId("+carID+")"
 }

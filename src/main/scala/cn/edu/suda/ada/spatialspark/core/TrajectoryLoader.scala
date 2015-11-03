@@ -14,6 +14,7 @@ class HDFSTrajectoryLoader(@transient val sc: SparkContext) extends Logging with
 
     /**
      * Transform the line of String in RDD into a trajectory object. The format of the parameter string is available in {URL OF GAO TONG DATA}
+     * @todo 
      * @param s A String record of the Trajectory.
      * @return  A Trajectory object.
      */
@@ -61,7 +62,8 @@ class HDFSTrajectoryLoader(@transient val sc: SparkContext) extends Logging with
    override def loadTrajectoryFromDataSource(path: String): RDD[Trajectory] = {
     logInfo("Loading trajectory data from %s".format(path))
     val lines = sc.textFile(path)
-    val rdd = lines.map(line => mapLine2Trajectory(line)).persist()
+    val rdd = lines.map(line => mapLine2Trajectory(line))
+    logInfo("Total number of trajectories: ")
     rdd
   }
 }

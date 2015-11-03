@@ -27,6 +27,12 @@ object Worker extends Logging {
     this.sc = sc
   }
 
+  def setRDDReference(rdd: RDD[Trajectory]): Unit ={
+    this.originalRDD = rdd
+    originalRDD.persist(StorageLevel.MEMORY_ONLY)
+    originalRDD.setName("Original Trajectory RDD")
+    logInfo("There are %d number of trajectories".format(originalRDD.count()))
+  }
 //  /**
 //   * Load trajectories from data sources
 //   * @param path Hadoop input path. start with "hdfs://"
@@ -53,12 +59,13 @@ object Worker extends Logging {
    * @todo the second map is unnecessary
    */
   def getTrajFeatures(feature: Trajectory => Int): Array[(Int, Int)] = {
-
-    val MapRDD = rdd.map(trajectory => (feature(trajectory),1)).reduceByKey(_ + _, 4).sortByKey(true).collect()
+    val appliedRDD = if(rdd == null) originalRDD else rdd
+    val MapRDD = appliedRDD.map(trajectory => (feature(trajectory),1)).reduceByKey(_ + _, 4).sortByKey(true).collect()
     MapRDD
   }
   def getGPSFeatures(feature: Trajectory => Seq[(Int,Int)]):Array[(Int,Int)] = {
-    val mapRdd = rdd.flatMap(trajectory => feature(trajectory)).map(t => (t._2,t._1)).reduceByKey(_ + _,4).sortByKey(true).collect()
+    val appliedRDD = if(rdd == null) originalRDD else rdd
+    val mapRdd = appliedRDD.flatMap(trajectory => feature(trajectory)).map(t => (t._2,t._1)).reduceByKey(_ + _,4).sortByKey(true).collect()
     mapRdd
   }
   /**
@@ -70,7 +77,6 @@ object Worker extends Logging {
    */
   def calculateFeatures(features: Map[String, Int]): Map[String, Array[(Int, Int)]] = {
     // def calculateFeatures(features: Map[String,Int]):Worker = {
-    if (rdd == null) rdd = originalRDD
     logInfo("calculating the features:")
 
     var distributions = Map[String, Array[(Int, Int)]]()
@@ -99,6 +105,8 @@ object Worker extends Logging {
         }
       distributions += (featureName -> distribution)
     }
+    if(rdd != null) rdd.unpersist()
+    rdd = null
     distributions
   }
 
@@ -157,10 +165,9 @@ object Worker extends Logging {
     val filtersBroadcast = sc.broadcast(constructFilters(filtersParameters))
 
     if (originalRDD == null) throw new Exception("Error: trajectory data is null in Worker.applyFilters()")
-    rdd = originalRDD
     logInfo("Applying filters on trajectory rdd")
 
-    rdd = rdd.filter(tra => {
+    rdd = originalRDD.filter(tra => {
       var flag = true
       //val filters = Worker.constructFilters(filtersParameters)
       val filters = filtersBroadcast.value
@@ -168,7 +175,7 @@ object Worker extends Logging {
         flag = flag && filter.doFilter(tra)
       }
       flag
-    }).persist(StorageLevel.MEMORY_ONLY)
+    }).persist(StorageLevel.MEMORY_ONLY).setName("Temp RDD")
     logInfo(rdd.partitions.length.toString)
     rdd
   }

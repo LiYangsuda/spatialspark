@@ -8,7 +8,7 @@ import scala.math._
  * frequency and similarity between trajectories .etc.
  * @author Graberial
  */
-class Trajectory(val trajectoryID:String,val carID:String,var GPSPoints:List[GPSPoint]) extends Serializable{
+class Trajectory(val trajectoryID: String,val carID:String,var GPSPoints:List[GPSPoint]) extends Serializable{
   var travelDistance: Float = -1  //Total length of travel distance
 
   var range: Range = _ //The minimum rectangle that merely covers this trajectory
@@ -32,12 +32,14 @@ class Trajectory(val trajectoryID:String,val carID:String,var GPSPoints:List[GPS
    * @note 只计算坐标距离不是长度，需要进一步完善
    */
   def getTravelDistance: Float = {
+    import Trajectory.getDistance
     if (travelDistance != -1)
       travelDistance
     else {
       var sum: Double = 0
       for(index <- 0 to GPSPoints.length - 2){
-        sum += hypot(GPSPoints(index).latitude - GPSPoints(index+1).latitude,GPSPoints(index).longitude - GPSPoints(index+1).longitude)
+    //    sum += hypot(GPSPoints(index).latitude - GPSPoints(index+1).latitude,GPSPoints(index).longitude - GPSPoints(index+1).longitude)
+        sum += getDistance(GPSPoints(index).getPoint(),GPSPoints(index+1).getPoint())
       }
       travelDistance = sum.toFloat
       travelDistance
@@ -96,4 +98,16 @@ class Trajectory(val trajectoryID:String,val carID:String,var GPSPoints:List[GPS
   }
 
   override def toString = "Trajectory: Id ("+trajectoryID+") carId("+carID+")"
+}
+
+object Trajectory{
+    def getDistance(start: Point,end:Point):Double={
+    val lat1 = (Math.PI/180)*start.y
+    val lat2 = (Math.PI/180)*end.y
+    val lon1 = (Math.PI/180)*start.x
+    val lon2 = (Math.PI/180)*end.x
+    val R = 6371
+    val distance = Math.acos(Math.sin(lat1)*Math.sin(lat2)+Math.cos(lat1)*Math.cos(lat2)*Math.cos(lon2-lon1))*R
+    distance
+  }
 }

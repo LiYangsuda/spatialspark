@@ -11,10 +11,10 @@ trait TrajectoryLoader{
   def loadTrajectoryFromDataSource(path:String):RDD[Trajectory]
 }
 class HDFSTrajectoryLoader(@transient val sc: SparkContext) extends Logging with TrajectoryLoader with Serializable{
-
+  // private  val ac = sc.accumulator(0,"trajectoryID")
     /**
      * Transform the line of String in RDD into a trajectory object. The format of the parameter string is available in {URL OF GAO TONG DATA}
-     * @todo 
+     * @todo outlier detection need to be done after the trajectories have been loaded!
      * @param s A String record of the Trajectory.
      * @return  A Trajectory object.
      */
@@ -32,15 +32,26 @@ class HDFSTrajectoryLoader(@transient val sc: SparkContext) extends Logging with
 
       //The first gps point is different from the rest one. Deal with specially
       val firstRecord = records(0).split(":")
-      val firstGPSPoint = new GPSPoint(firstRecord(0).toFloat/100000,firstRecord(1).toFloat/100000,firstRecord(2).toFloat,firstRecord(3).toLong,firstRecord(4).toShort)
+      val firstGPSPoint = new GPSPoint(
+        firstRecord(0).toFloat/100000,      //Longitude
+        firstRecord(1).toFloat/100000,      //Latitude
+        firstRecord(2).toFloat,             //Speed
+        firstRecord(3).toLong,              //TimeStamp
+        firstRecord(4).toShort              //Direction
+      )
 
       if(firstGPSPoint.speed < 0){firstGPSPoint.speed = 0}
       GPSPoints = firstGPSPoint :: GPSPoints
       val startTime = firstGPSPoint.timestamp
       for (record <- records.tail) {
         val recordArray = record.split(":")
-        val samplePoint = GPSPoint(recordArray(0).toFloat / 100000 + firstGPSPoint.longitude, recordArray(1).toFloat / 100000 + firstGPSPoint.latitude,
-          Math.round((recordArray(2).toFloat / 3.6) * 100) / 100, recordArray(3).toLong + startTime , recordArray(4).toShort)
+        val samplePoint = GPSPoint(
+          recordArray(0).toFloat / 100000 + firstGPSPoint.longitude,
+          recordArray(1).toFloat / 100000 + firstGPSPoint.latitude,
+          Math.round((recordArray(2).toFloat / 3.6) * 100) / 100,
+          recordArray(3).toLong + startTime ,
+          recordArray(4).toShort
+        )
         if (samplePoint.speed < 0) {
           samplePoint.speed = 0
         }
@@ -58,12 +69,10 @@ class HDFSTrajectoryLoader(@transient val sc: SparkContext) extends Logging with
    * @param path Hadoop input path. start with "hdfs://"
    * @return Trajectory RDD of from the file
    */
-
    override def loadTrajectoryFromDataSource(path: String): RDD[Trajectory] = {
     logInfo("Loading trajectory data from %s".format(path))
     val lines = sc.textFile(path)
     val rdd = lines.map(line => mapLine2Trajectory(line))
-    logInfo("Total number of trajectories: ")
     rdd
   }
 }

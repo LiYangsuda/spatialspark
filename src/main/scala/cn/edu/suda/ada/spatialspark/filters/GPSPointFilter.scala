@@ -48,7 +48,7 @@ object GPSPointSampleSpeedFilter extends GPSPointFilter{
    * @return
    */
   override def doFilter(trajectory: Trajectory): Trajectory = {
-    if(interval == null) throw new NullPointerException("range is null in %s"+this.getClass.getSimpleName)
+    if(interval == 0) throw new NullPointerException("range is null in %s"+this.getClass.getSimpleName)
     trajectory.getSubTrajectory(interval)
   }
 

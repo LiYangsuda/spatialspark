@@ -7,28 +7,9 @@ import org.scalatest.FunSuite
  */
 class TrajectoryTest extends FunSuite {
 
-  test("testGetAverageSampleInterval") {
-
-  }
-
-  test("testGetStartPoint") {
-
-  }
-
-  test("testGetEndTime") {
-
-  }
-
-  test("testTravelDistance") {
-
-  }
-
-  test("testGetStarTime") {
-
-  }
-
-  test("testGetDuration") {
-
-  }
-
+ test("getDistance"){
+   val start = Point(39.95676, 116.401394)
+   val end = Point(36.63014,114.499574)
+  println(Trajectory.getDistance(start, end))
+ }
 }

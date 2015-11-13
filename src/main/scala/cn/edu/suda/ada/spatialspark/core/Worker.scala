@@ -31,6 +31,7 @@ object Worker extends Logging {
     this.originalRDD = rdd
     originalRDD.persist(StorageLevel.MEMORY_ONLY)
     originalRDD.setName("Original Trajectory RDD")
+
     logInfo("There are %d number of trajectories".format(originalRDD.count()))
   }
 //  /**
@@ -163,7 +164,7 @@ object Worker extends Logging {
    */
   def applyFilters(filtersParameters: Map[String,Map[String,String]]):RDD[Trajectory] = {
     val filtersBroadcast = sc.broadcast(constructFilters(filtersParameters))
-
+   filtersBroadcast.value.foreach(println _)
     if (originalRDD == null) throw new Exception("Error: trajectory data is null in Worker.applyFilters()")
     logInfo("Applying filters on trajectory rdd")
 
@@ -175,7 +176,7 @@ object Worker extends Logging {
         flag = flag && filter.doFilter(tra)
       }
       flag
-    }).persist(StorageLevel.MEMORY_ONLY).setName("Temp RDD")
+    }).setName("Temp RDD").cache()
     logInfo(rdd.partitions.length.toString)
     rdd
   }

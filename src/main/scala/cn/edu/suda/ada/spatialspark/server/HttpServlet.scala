@@ -33,6 +33,7 @@ class JettyHttpServlet extends HttpServlet{
       for(param <- filterParameters){
         System.out.println(param.toString())
       }
+      if(filterParameters == null) println("null in servlet")
       Worker.applyFilters(filterParameters)
     }
     else{
@@ -50,21 +51,21 @@ class JettyHttpServlet extends HttpServlet{
      the low bound of a range and numbers represents the number of trajectories that fall into that range. For example, if the passed parameter level step is 2 and a tuple in the
      distribution is (0,1111), that means there are 1111 trajectories that fall into the range [0,2)
     */
-//
-//    val distributions = Worker.calculateFeatures(featureParameters)
-//
-//    featureDisplay(distributions)
-//    //System.out.println(Worker.toJson(distributions,featureParameters))
-//    var out: PrintWriter = null
-//    try{
-//      out = resp.getWriter
-//      out.print(Worker.toJson(distributions,featureParameters))
-//      out.flush()
-//    }catch {
-//      case e: Exception => System.out.println(e.printStackTrace())
-//    }finally {
-//      out.close()
-//    }
+
+    val distributions = Worker.calculateFeatures(featureParameters)
+
+    featureDisplay(distributions)
+    //System.out.println(Worker.toJson(distributions,featureParameters))
+    var out: PrintWriter = null
+    try{
+      out = resp.getWriter
+      out.print(Worker.toJson(distributions,featureParameters))
+      out.flush()
+    }catch {
+      case e: Exception => System.out.println(e.printStackTrace())
+    }finally {
+      out.close()
+    }
   }
   override def doGet(req:HttpServletRequest,resp:HttpServletResponse){
 
@@ -163,7 +164,7 @@ class JettyHttpServlet extends HttpServlet{
         case "TrajAvgSpeed" => {
           if(filters != null){
             val filter = filters.get("AvgSpeed")
-            if(filter != null){                   //if avgspeed filter exists
+            if(filter != None){                   //if avgspeed filter exists
               if(filter.get("relation") == "lt"){
                 levelStep =  filter.get("value").toInt / 20
               }else{
@@ -180,7 +181,7 @@ class JettyHttpServlet extends HttpServlet{
         case "TrajTravelDistance" => {
           if(filters != null){
             val filter = filters.get("TravelDistance")
-            if(filter != null){                   //if avgspeed filter exists
+            if(filter != None){                   //if avgspeed filter exists
               if(filter.get("relation") == "lt"){
                 levelStep =    filter.get("value").toInt / 20
               }else{
@@ -188,7 +189,7 @@ class JettyHttpServlet extends HttpServlet{
               }
               println(levelStep)
             }else{
-              levelStep =    10000             //default levelstep
+              levelStep = 10000             //default levelstep
             }
           }
           else {
@@ -198,14 +199,14 @@ class JettyHttpServlet extends HttpServlet{
         case "TrajTravelTime" => {
           if(filters != null){
             val filter = filters.get("TravelTime")
-            if(filter != null){                   //if avgspeed filter exists
+            if(filter != None){                   //if avgspeed filter exists
               if(filter.get("relation") == "lt"){
                 levelStep =    filter.get("value").toInt / 20
               }else{
-                levelStep =    Math.abs(36000 - filter.get("value").toInt) / 20
+                levelStep =  Math.abs(36000 - filter.get("value").toInt) / 20
               }
             }else{
-              levelStep =   900
+              levelStep =  900
             }
           }
           else {
@@ -218,14 +219,14 @@ class JettyHttpServlet extends HttpServlet{
         case "TrajAvgSampleTime" => {
           if(filters != null){
             val filter = filters.get("AvgSampleTime")
-            if(filter != null){                   //if avgspeed filter exists
+            if(filter != None){                   //if avgspeed filter exists
               if(filter.get("relation") == "lt"){
                 levelStep =      filter.get("value").toInt / 20
               }else{
                 levelStep =     Math.abs(200 - filter.get("value").toInt) / 20
               }
             }else{
-              levelStep =    50
+              levelStep = 50
             }
           }
           else {
@@ -233,9 +234,9 @@ class JettyHttpServlet extends HttpServlet{
           }
         }
         case "GPSSampleSpeed" => {
-          levelStep =    5
+          levelStep =  5
         }
-        case _ => levelStep =   1000
+        case _ => levelStep =  1000
       }
       parameterMap += (feature -> levelStep)
     }

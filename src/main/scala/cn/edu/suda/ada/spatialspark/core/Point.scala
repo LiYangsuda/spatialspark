@@ -14,5 +14,12 @@ class Point(var x:Float,var y:Float) {
    */
   override def hashCode = 13*x.hashCode+17*y.hashCode
 
-
+}
+object Point{
+  def apply(x: Float,y:Float):Point = {
+    new Point(x,y)
+  }
+  def apply(x: Double,y:Double):Point = {
+    new Point(x.toFloat,y.toFloat)
+  }
 }

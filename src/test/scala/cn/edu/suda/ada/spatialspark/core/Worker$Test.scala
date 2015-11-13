@@ -10,15 +10,15 @@ import org.scalatest.FlatSpec
  * Created by liyang on 15-10-6.
  */
 class WorkerTest extends FlatSpec {
-  val sc = new SparkContext(new SparkConf().setMaster("local").setAppName("WorkerTest"))
-  Worker.setSparkContext(sc)
-  var rdd: RDD[Trajectory] = null
-  val inputPath = "hdfs://192.168.131.192:9000/data/xaa"
-
-
-  val feature = Map("TrajAvgSpeed"->10)
-  //TrajectoryAverageSpeedClassifier.setLevelStep(10)
-  val dis = Worker.calculateFeatures(feature)
+//  val sc = new SparkContext(new SparkConf().setMaster("local").setAppName("WorkerTest"))
+//  Worker.setSparkContext(sc)
+//  var rdd: RDD[Trajectory] = null
+//  val inputPath = "hdfs://192.168.131.192:9000/data/xaa"
+//
+//
+//  val feature = Map("TrajAvgSpeed"->10)
+//  //TrajectoryAverageSpeedClassifier.setLevelStep(10)
+//  val dis = Worker.calculateFeatures(feature)
 
 //    .reduceByKey(_ + _, 2).sortByKey(true).collect()
 //  featureDisplay(dis)
@@ -87,4 +87,9 @@ class WorkerTest extends FlatSpec {
 //    val distribution = Worker.getTrajFeatures(t => TrajectoryAverageSpeedClassifier.getLevel(t))
 //    featureDisplay(distribution)
 //  }
+
+  "Error" should "be thrown " in{
+    val filters = Map("TravelDistance" -> Map("value" -> "5000", "relation" -> "lt"))
+    Worker.applyFilters(filters)
+  }
 }

@@ -13,6 +13,21 @@ class GPSPoint(val longitude:Float,val latitude:Float,var speed:Float,val timest
    * @return Return a Point object
    */
   def getPoint():Point = new Point(longitude,latitude)
+
+  /**
+   * Get the distance between two gps points
+   * @param other another gps point
+   * @return
+   */
+  def getDistance(other: GPSPoint):Double={
+    val lat1 = (Math.PI/180)*latitude
+    val lat2 = (Math.PI/180)*other.latitude
+    val lon1 = (Math.PI/180)*longitude
+    val lon2 = (Math.PI/180)*other.longitude
+    val R = 6371
+    val distance = Math.acos(Math.sin(lat1)*Math.sin(lat2)+Math.cos(lat1)*Math.cos(lat2)*Math.cos(lon2-lon1))*R
+    distance
+  }
   /**
    * Getters and Setters
    */

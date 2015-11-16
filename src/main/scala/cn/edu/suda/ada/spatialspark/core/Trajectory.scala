@@ -29,7 +29,7 @@ class Trajectory(val trajectoryID: String,val carID:String,var GPSPoints:List[GP
 
   /**
    * @return travel distance of a trajectory
-   * @note 只计算坐标距离不是长度，需要进一步完善
+   * @note
    */
   def getTravelDistance: Float = {
     import Trajectory.getDistance
@@ -101,7 +101,7 @@ class Trajectory(val trajectoryID: String,val carID:String,var GPSPoints:List[GP
 }
 
 object Trajectory{
-    def getDistance(start: Point,end:Point):Double={
+   private  def getDistance(start: Point,end:Point):Double={
     val lat1 = (Math.PI/180)*start.y
     val lat2 = (Math.PI/180)*end.y
     val lon1 = (Math.PI/180)*start.x

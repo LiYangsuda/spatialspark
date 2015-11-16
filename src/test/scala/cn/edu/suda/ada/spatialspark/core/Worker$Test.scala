@@ -92,4 +92,8 @@ class WorkerTest extends FlatSpec {
     val filters = Map("TravelDistance" -> Map("value" -> "5000", "relation" -> "lt"))
     Worker.applyFilters(filters)
   }
+
+  "Average speed" should "be display " in {
+
+  }
 }

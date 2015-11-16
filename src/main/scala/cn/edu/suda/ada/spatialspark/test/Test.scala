@@ -1,7 +1,9 @@
 package cn.edu.suda.ada.spatialspark.test
 
 import cn.edu.suda.ada.spatialspark.core.{Trajectory, HDFSTrajectoryLoader, TrajectoryLoader, Worker}
+import cn.edu.suda.ada.spatialspark.filters.OutlierDetection
 import cn.edu.suda.ada.spatialspark.server.{JettyHttpServlet, JettyEmbedServer}
+import cn.edu.suda.ada.spatialspark.utils.DouglasPeucker
 import org.apache.spark.{SparkConf, SparkContext}
 
 /**
@@ -30,8 +32,21 @@ object Test {
     Worker.setSparkContext(sc)
     val trajectoryLoader: TrajectoryLoader = TrajectoryLoader(sc)
 
+    // Load trajectory data from text file
     val rdd = trajectoryLoader.loadTrajectoryFromDataSource(inputPath)
-    Worker.setRDDReference(rdd)
+
+    //Delete outlier points in a trajectory
+    val nRdd = rdd.map(t => OutlierDetection.deleteOutlierPoints(t,41))
+
+    //Compress the GPS points in a trajectory
+    val nRdd2 = nRdd.map(t =>{
+      val points = DouglasPeucker.compress(t.GPSPoints.toArray,0,t.GPSPoints.length-1,0.00001)
+      t.GPSPoints = points.toList
+      t
+    })
+    println(nRdd2.count())
+    Worker.setRDDReference(nRdd2)
+
     val serverName = "JettyEmbedServer"
     val port = 9999
     val jettyServer = new JettyEmbedServer(serverName, port)

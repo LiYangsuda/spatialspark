@@ -55,7 +55,6 @@ class HDFSTrajectoryLoader(@transient val sc: SparkContext) extends Logging with
         if (samplePoint.speed < 0) {
           samplePoint.speed = 0
         }
-
         GPSPoints = samplePoint :: GPSPoints
       }
 

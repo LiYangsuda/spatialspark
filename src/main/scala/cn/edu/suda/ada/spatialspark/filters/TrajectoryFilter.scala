@@ -251,7 +251,31 @@ class TrajectoryDPointFilter(var range: Range) extends TrajectoryFilter with Ser
 
   override def toString = "Object TrajectoryPassRangeFilter: range = "+range.toString
 }
+private class TrajectoryRangeFilter(var range: Range) extends TrajectoryFilter with Serializable{
 
+  def setParameters(range: Range): Unit ={
+    this.range = range
+  }
+
+  /**
+   * Test whether there exists a sample point in the passed in Range.
+   * @note If the sample interval is large, this method needs to be reconstruct
+   * @param trajectory
+   * @return Return true if the trajectory passes by the given area, otherwise false.
+   */
+  override def doFilter(trajectory: Trajectory): Boolean = {
+    val range_ = this.range
+    val subTrajectory = trajectory.getSubTrajectory(range_)
+    if(subTrajectory.GPSPoints.length != 0) {
+      trajectory.GPSPoints = subTrajectory.GPSPoints
+      true
+    }else{
+      false
+    }
+  }
+
+  override def toString = "Object TrajectoryPassRangeFilter: range = "+range.toString
+}
 object TrajectoryFilter{
   def apply(filtersParameters : Map[String,Map[String,String]]): List[TrajectoryFilter] ={
     var filters: List[TrajectoryFilter] = Nil
@@ -295,6 +319,11 @@ object TrajectoryFilter{
       if(filter._1.equalsIgnoreCase("PassRange")){
         val range = new Range(filter._2("minLng").toDouble,filter._2("maxLat").toDouble,filter._2("maxLng").toDouble,filter._2("minLat").toDouble)
         val item = new TrajectoryPassRangeFilter(range)
+        filters =    item :: filters
+      }
+      if(filter._1.equalsIgnoreCase("Range")){
+        val range = new Range(filter._2("minLng").toDouble,filter._2("maxLat").toDouble,filter._2("maxLng").toDouble,filter._2("minLat").toDouble)
+        val item = new TrajectoryRangeFilter(range)
         filters =    item :: filters
       }
     }

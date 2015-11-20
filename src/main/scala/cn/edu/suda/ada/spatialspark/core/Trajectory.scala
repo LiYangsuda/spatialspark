@@ -29,7 +29,7 @@ class Trajectory(val trajectoryID: String,val carID:String,var GPSPoints:List[GP
 
   /**
    * @return travel distance of a trajectory
-   * @note
+   * @note 只计算坐标距离不是长度，需要进一步完善
    */
   def getTravelDistance: Float = {
     import Trajectory.getDistance
@@ -63,12 +63,13 @@ class Trajectory(val trajectoryID: String,val carID:String,var GPSPoints:List[GP
    * @return sub trajectory satisfies the time and pass-by area filter
    */
   def getSubTrajectory(rect: Range): Trajectory = {
-    var subGPSPoints: List[GPSPoint] = List()
-    for (point <- GPSPoints if rect.contains(point.latitude, point.longitude)) {
-      subGPSPoints = point :: subGPSPoints
-    }
+//    var subGPSPoints: List[GPSPoint] = Nil
+//    for (point <- GPSPoints if rect.contains(point.latitude, point.longitude)) {
+//      subGPSPoints = point :: subGPSPoints
+//    }
+    val subTraj = GPSPoints.filter(p => rect.contains(p.getPoint()))
 
-    new Trajectory(trajectoryID, carID,  subGPSPoints.reverse)
+    new Trajectory(trajectoryID, carID, subTraj)
   }
 
   def getSubTrajectory(interval: Int): Trajectory = {

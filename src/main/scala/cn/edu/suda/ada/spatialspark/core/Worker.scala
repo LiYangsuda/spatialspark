@@ -18,7 +18,7 @@ object Worker extends Logging {
   var sc: SparkContext = _
   var rdd: RDD[Trajectory] = null
   var originalRDD: RDD[Trajectory] = null
-
+  var points: String = _
   /**
    * Set the spark sc for the worker, which will be used to loading trajectory from file
    * @param sc Sparksc
@@ -106,11 +106,31 @@ object Worker extends Logging {
         }
       distributions += (featureName -> distribution)
     }
+    points = takeSamplePoints()
     if(rdd != null) rdd.unpersist()
     rdd = null
     distributions
   }
 
+  /**
+   * data: [{lnglat: [116.405285, 39.904989], name: i,id:1},{}, …]
+   * @return
+   */
+  private def takeSamplePoints():String ={
+    println("take sample points")
+    var samplePoints = ""
+    var trajectories: Array[Trajectory] = null
+    if(rdd != null){trajectories = rdd.takeSample(true,200)}
+    else {trajectories = originalRDD.takeSample(true,200)}
+ //   trajectories.foreach(traj => points += trajectoryPoints(traj))
+    samplePoints = "[" + trajectories.map(traj => trajectoryPoints(traj)).mkString(",")+"]"
+    samplePoints
+  }
+  private  def trajectoryPoints(traj: Trajectory): String = {
+    val gpsPoints = traj.GPSPoints
+    val str = gpsPoints.map(p => "{\"lnglat\":["+p.longitude+","+p.latitude+"]}").mkString(",")
+    str
+  }
   /**
    * Transform all features' distribution data into json format.
    * @param distributions  Type: Map[featureName:String,featureDistribution: Array[(Int,Int)]   All feature distributions.
@@ -121,7 +141,7 @@ object Worker extends Logging {
     val jsonSet = for (singleDistribution <- distributions) yield {
       "\"" + singleDistribution._1 + "\":" + array2JsonArray(singleDistribution._2, featureLevelSteps(singleDistribution._1))
     }
-    val jsonData = "{" + jsonSet.mkString(",") + "}"
+    val jsonData = "{" + jsonSet.mkString(",") + ",\"points\":"+points+"}"
     jsonData
   }
 
@@ -164,7 +184,7 @@ object Worker extends Logging {
    */
   def applyFilters(filtersParameters: Map[String,Map[String,String]]):RDD[Trajectory] = {
     val filtersBroadcast = sc.broadcast(constructFilters(filtersParameters))
-   filtersBroadcast.value.foreach(println _)
+
     if (originalRDD == null) throw new Exception("Error: trajectory data is null in Worker.applyFilters()")
     logInfo("Applying filters on trajectory rdd")
 
@@ -177,6 +197,19 @@ object Worker extends Logging {
       }
       flag
     }).setName("Temp RDD").cache()
+//    if(filtersParameters.contains("Range")) {
+//      val params = filtersParameters.get("Range")
+//      val range = new Range(params.get("minLng").toDouble, params.get("maxLat").toDouble, params.get("maxLng").toDouble, params.get("minLat").toDouble)
+//      val gpsFilter = new GPSPointRangeFilter(range)
+//      val bc = sc.broadcast(gpsFilter)
+//
+//      val rdd2 = rdd.filter(traj =>{
+//        val filter = bc.value
+//        filter.doFilter(traj)})
+//      //rdd2.foreach(t => println(t.GPSPoints.length))
+//      rdd = rdd2
+//    }
+
     logInfo(rdd.partitions.length.toString)
     rdd
   }

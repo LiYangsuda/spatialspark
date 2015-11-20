@@ -223,7 +223,7 @@ class JettyHttpServlet extends HttpServlet{
               if(filter.get("relation") == "lt"){
                 levelStep =      filter.get("value").toInt / 20
               }else{
-                levelStep =     Math.abs(200 - filter.get("value").toInt) / 20
+                levelStep =     Math.abs(1000 - filter.get("value").toInt) / 20
               }
             }else{
               levelStep = 50

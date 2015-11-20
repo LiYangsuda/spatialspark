@@ -22,4 +22,5 @@ object Point{
   def apply(x: Double,y:Double):Point = {
     new Point(x.toFloat,y.toFloat)
   }
+
 }

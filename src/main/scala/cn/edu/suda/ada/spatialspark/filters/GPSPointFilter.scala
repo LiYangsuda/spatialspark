@@ -15,23 +15,24 @@ trait GPSPointFilter extends Serializable{
  * Filter on GPSPoints based on whether the points are in the range of the passed in range
  * This will get a sub trajectory of the original one.
  */
-object GPSPointRangeFilter extends GPSPointFilter{
-  var range : Range = _
-  def setParameters(range: Range): Unit ={
-    this.range = range
-  }
-  /**
-   * Get a sub trajectory of the original one, whose GPS Points are all int the range
-   * @param trajectory
-   * @return
-   */
-  override def doFilter(trajectory: Trajectory): Trajectory = {
-    if(range == null) throw new NullPointerException("range is null in %s"+this.getClass.getSimpleName)
-    trajectory.getSubTrajectory(range)
-  }
-
-  override def toString = "GPSPointRangeFilter: range = " + range.toString
-}
+//class GPSPointRangeFilter(var range: Range) extends GPSPointFilter{
+//
+//  def setParameters(range: Range): Unit ={
+//    this.range = range
+//  }
+//  /**
+//   * Get a sub trajectory of the original one, whose GPS Points are all int the range
+//   * @param trajectory
+//   * @return
+//   */
+//  override def doFilter(trajectory: Trajectory): Trajectory = {
+//    val range_ = range
+//    if(range == null) throw new NullPointerException("range is null in %s"+this.getClass.getSimpleName)
+//    trajectory.getSubTrajectory(range_)
+//  }
+//
+//  override def toString = "GPSPointRangeFilter: range = " + range.toString
+//}
 
 /**
  * Filter on GPSPoints based on whether the points' speeds are in the range

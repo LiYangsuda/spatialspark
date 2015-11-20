@@ -12,7 +12,7 @@ object OutlierDetection {
    * @param GPSPoints
    * @return
    */
-  def deleteOutlierPoints(GPSPoints: List[GPSPoint],speedUpperBound:Float):List[GPSPoint] = {
+   @Deprecated def deleteOutlierPoints(GPSPoints: List[GPSPoint],speedUpperBound:Float):List[GPSPoint] = {
     var res: List[GPSPoint] = Nil
     res = GPSPoints(0)::res
     for(i <- 1 to GPSPoints.length - 1){
@@ -28,13 +28,14 @@ object OutlierDetection {
    * given upper bound, say 35(m/s), which is the limited speed 120km/h on the highway. Since the instantaneous velocity can be higher than 120km/h,
    * the upper bound should be greater than that number. From the observation, the greatest number that make sense is 54 m/s.
    * @param traj  Trajectory
-   * @param speedUpperBound  Speed upper bound
+   * @param speedUpperBound  Speed upper bound, default 45 m/s considering the instantaneous acceleration
    * @return  Passed in trajectory with all outlier gps points deleted
    */
-  def deleteOutlierPoints(traj:Trajectory,speedUpperBound:Float):Trajectory = {
+  def deleteOutlierPoints(traj:Trajectory,speedUpperBound:Float = 45):Trajectory = {
+
     var res: List[GPSPoint] = Nil
     val GPSPoints = traj.GPSPoints
-    res = GPSPoints(0)::res
+    res = GPSPoints(0)::res                   //If the first point is not outlier
     for(i <- 1 to GPSPoints.length - 1){
       val dis = GPSPoints(i).getDistance(GPSPoints(i-1))*1000
       val interval = GPSPoints(i).timestamp - GPSPoints(i-1).timestamp

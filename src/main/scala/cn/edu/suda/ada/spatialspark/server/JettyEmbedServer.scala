@@ -5,12 +5,13 @@ import java.io.File
 import java.net.ServerSocket
 import javax.servlet.http.HttpServlet
 
+import org.apache.log4j.LogManager
 import org.apache.spark.Logging
+
 import org.eclipse.jetty.server.nio.SelectChannelConnector
 import org.eclipse.jetty.server.{Connector, Server}
 import org.eclipse.jetty.servlet._
 import org.eclipse.jetty.util.thread.{ThreadPool, QueuedThreadPool}
-
 
 /**
  * Created by liyang on 15-9-19.

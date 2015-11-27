@@ -19,6 +19,7 @@ object Worker extends Logging {
   var rdd: RDD[Trajectory] = null
   var originalRDD: RDD[Trajectory] = null
   var points: String = _
+  var count: Long = 0
   /**
    * Set the spark sc for the worker, which will be used to loading trajectory from file
    * @param sc Sparksc
@@ -31,8 +32,8 @@ object Worker extends Logging {
     this.originalRDD = rdd
     originalRDD.persist(StorageLevel.MEMORY_ONLY)
     originalRDD.setName("Original Trajectory RDD")
-
-    logInfo("There are %d number of trajectories".format(originalRDD.count()))
+    count = originalRDD.count()
+    logInfo("There are %d number of trajectories".format(count))
   }
 //  /**
 //   * Load trajectories from data sources
@@ -120,8 +121,11 @@ object Worker extends Logging {
     println("take sample points")
     var samplePoints = ""
     var trajectories: Array[Trajectory] = null
-    if(rdd != null){trajectories = rdd.takeSample(true,200)}
-    else {trajectories = originalRDD.takeSample(true,200)}
+    if(rdd != null){
+      trajectories = rdd.takeSample(false,200)
+    }else {
+      trajectories = originalRDD.takeSample(false,200)
+    }
  //   trajectories.foreach(traj => points += trajectoryPoints(traj))
     samplePoints = "[" + trajectories.map(traj => trajectoryPoints(traj)).mkString(",")+"]"
     samplePoints

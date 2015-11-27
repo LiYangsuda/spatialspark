@@ -7,6 +7,8 @@ trait index {
 
 }
 
-class RTree{
+class RTree extends index{
 
 }
+
+class RTreeNode()

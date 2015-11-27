@@ -31,7 +31,7 @@ private class TrajectoryOTimeFilter(var otime: Long,var relation: String) extend
     val result: Boolean = relation match {
       case "gt" => t > otime
       case "lt" => t < otime
-      case "equal" => t == otime
+      case "equal" => t >= (otime - 60) &&  t <=  (otime + 60)
       case "ngt" => t <= otime
       case "nlt" => t >= otime
       case _ => throw new IllegalArgumentException("relation: " +relation)
@@ -62,7 +62,7 @@ private class TrajectoryOTimeFilter(var otime: Long,var relation: String) extend
     val result: Boolean = relation_ match {
       case "gt" => t > dtime_
       case "lt" => t < dtime_
-      case "equal" => t == dtime_
+      case "equal" => t >= (dtime_ - 60) &&  t <=  (dtime_ + 60)
       case "ngt" => t <= dtime_
       case "nlt" => t >= dtime_
       case _ => throw new IllegalArgumentException(this+"relation: " +relation_)

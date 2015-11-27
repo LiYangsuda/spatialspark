@@ -8,7 +8,7 @@ import scala.math._
  * frequency and similarity between trajectories .etc.
  * @author Graberial
  */
-class Trajectory(val trajectoryID: String,val carID:String,var GPSPoints:List[GPSPoint]) extends Serializable{
+case class Trajectory(val trajectoryID: String,val carID:String,var GPSPoints:List[GPSPoint]) extends Serializable{
   var travelDistance: Float = -1  //Total length of travel distance
 
   var range: Range = _ //The minimum rectangle that merely covers this trajectory
@@ -32,14 +32,13 @@ class Trajectory(val trajectoryID: String,val carID:String,var GPSPoints:List[GP
    * @note 只计算坐标距离不是长度，需要进一步完善
    */
   def getTravelDistance: Float = {
-    import Trajectory.getDistance
     if (travelDistance != -1)
       travelDistance
     else {
       var sum: Double = 0
       for(index <- 0 to GPSPoints.length - 2){
     //    sum += hypot(GPSPoints(index).latitude - GPSPoints(index+1).latitude,GPSPoints(index).longitude - GPSPoints(index+1).longitude)
-        sum += getDistance(GPSPoints(index).getPoint(),GPSPoints(index+1).getPoint())
+        sum += GPSPoints(index).getDistance(GPSPoints(index+1))
       }
       travelDistance = sum.toFloat
       travelDistance
@@ -98,17 +97,15 @@ class Trajectory(val trajectoryID: String,val carID:String,var GPSPoints:List[GP
     }
   }
 
-  override def toString = "Trajectory: Id ("+trajectoryID+") carId("+carID+")"
-}
-
-object Trajectory{
-   private  def getDistance(start: Point,end:Point):Double={
-    val lat1 = (Math.PI/180)*start.y
-    val lat2 = (Math.PI/180)*end.y
-    val lon1 = (Math.PI/180)*start.x
-    val lon2 = (Math.PI/180)*end.x
-    val R = 6371
-    val distance = Math.acos(Math.sin(lat1)*Math.sin(lat2)+Math.cos(lat1)*Math.cos(lat2)*Math.cos(lon2-lon1))*R
-    distance
+  /**
+   * Get the nearest distance between a GPS point and a trajectory.
+   * d(p,T) = min(p,T.q)
+   *         q in T
+   * @param point
+   * @return
+   */
+  def getDistance(point: GPSPoint):Double = {
+    GPSPoints.maxBy(p => p.getDistance(point)).getDistance(point)
   }
+  override def toString = "Trajectory: Id ("+trajectoryID+") numGPSPoints("+GPSPoints.length+")"
 }
